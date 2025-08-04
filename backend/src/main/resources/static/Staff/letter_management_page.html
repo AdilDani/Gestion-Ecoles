@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Lettres - Direction Régionale</title>
+    <style>
+        /* Palette de couleurs pour l'interface administrateur */
+        :root {
+            --admin-primary: #1565C0;
+            --admin-secondary: #0D47A1;
+            --admin-light: #E3F2FD;
+            --primary-red: #C41E3A;
+            --primary-green: #006233;
+            --accent-orange: #FF8C00;
+            --neutral-white: #FFFFFF;
+            --light-gray: #F8F9FA;
+            --medium-gray: #6C757D;
+            --dark-gray: #343A40;
+            --border-gray: #DEE2E6;
+            --success-green: #28A745;
+            --warning-orange: #FD7E14;
+            --danger-red: #DC3545;
+            
+            --shadow-light: 0 2px 4px rgba(0,0,0,0.1);
+            --shadow-medium: 0 4px 8px rgba(0,0,0,0.15);
+            --shadow-heavy: 0 8px 16px rgba(0,0,0,0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-gray);
+            color: var(--dark-gray);
+            line-height: 1.6;
+            direction: ltr;
+            transition: direction 0.3s ease;
+        }
+
+        /* RTL Support */
+        body[dir="rtl"] {
+            direction: rtl;
+            font-family: 'Arial', 'Tahoma', sans-serif;
+        }
+
+        /* Language Toggle */
+        .language-toggle {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-left: auto;
+        }
+
+        body[dir="rtl"] .language-toggle {
+            margin-left: 0;
+            margin-right: auto;
+        }
+
+        .lang-flag {
+            font-size: 1.2rem;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .lang-flag:hover {
+            opacity: 0.8;
+            transform: scale(1.1);
+        }
+
+        .lang-flag.active {
+            opacity: 1;
+            transform: scale(1.2);
+        }
+
+        /* Header administrateur */
+        .admin-header {
+            background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-secondary) 100%);
+            color: var(--neutral-white);
+            padding: 1rem 0;
+            box-shadow: var(--shadow-medium);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .admin-logo {
+            width: 50px;
+            height: 50px;
+            background: var(--neutral-white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--admin-primary);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .header-text {
+            flex: 1;
+        }
+
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .header-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .admin-nav {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-link {
+            color: var(--neutral-white);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: background-color 0.3s ease;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Container principal */
+        .main-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        /* Page title */
+        .page-header {
+            background: var(--neutral-white);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow-medium);
+            margin-bottom: 2rem;
+            border-left: 4px solid var(--admin-primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .header-section {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .page-title {
+            color: var(--admin-primary);
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-description {
+            color: var(--medium-gray);
+            font-size: 1.1rem;
+        }
+
+        .filters-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-end;
+            min-width: 400px;
+        }
+
+        .filter-info {
+            font-weight: 600;
+            color: var(--admin-primary);
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 0.75rem 1.5rem;
+            background: var(--neutral-white);
+            color: var(--medium-gray);
+            border: 2px solid var(--border-gray);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .filter-btn:hover {
+            border-color: var(--admin-primary);
+            color: var(--admin-primary);
+        }
+
+        .filter-btn.active {
+            background: var(--admin-primary);
+            color: var(--neutral-white);
+            border-color: var(--admin-primary);
+        }
+
+        /* Statistiques rapides */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--neutral-white);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow-medium);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--admin-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--medium-gray);
+            font-size: 0.9rem;
+        }
+
+        /* Liste des lettres */
+        .letters-container {
+            background: var(--neutral-white);
+            border-radius: 12px;
+            box-shadow: var(--shadow-medium);
+            overflow: hidden;
+        }
+
+        .letters-header {
+            background: var(--admin-light);
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-gray);
+        }
+
+        .letters-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--dark-gray);
+        }
+
+        .letter-item {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-gray);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .letter-item:hover {
+            background: var(--light-gray);
+        }
+
+        .letter-item:last-child {
+            border-bottom: none;
+        }
+
+        .letter-header {
+            display: flex;
+            justify-content: between;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .letter-info {
+            flex: 1;
+        }
+
+        .letter-type {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .letter-type.project {
+            background: var(--primary-red);
+            color: var(--neutral-white);
+        }
+
+        .letter-type.specific {
+            background: var(--success-green);
+            color: var(--neutral-white);
+        }
+
+        .letter-date {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--dark-gray);
+            margin-bottom: 0.25rem;
+        }
+
+        .letter-details {
+            color: var(--medium-gray);
+            font-size: 0.9rem;
+        }
+
+        .response-stats {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .response-count {
+            text-align: center;
+        }
+
+        .response-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--admin-primary);
+        }
+
+        .response-fraction {
+            font-size: 0.9rem;
+            color: var(--medium-gray);
+        }
+
+        .progress-bar {
+            width: 100px;
+            height: 8px;
+            background: var(--border-gray);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--danger-red) 0%, var(--warning-orange) 50%, var(--success-green) 100%);
+            transition: width 0.3s ease;
+        }
+
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-badge.pending {
+            background: var(--warning-orange);
+            color: var(--neutral-white);
+        }
+
+        .status-badge.complete {
+            background: var(--success-green);
+            color: var(--neutral-white);
+        }
+
+        .chevron {
+            color: var(--medium-gray);
+            font-size: 1.2rem;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--medium-gray);
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .header-content {
+                padding: 0 1rem;
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .admin-nav {
+                order: -1;
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .main-container {
+                padding: 0 1rem;
+            }
+            
+            .page-header {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 1.5rem;
+            }
+            
+            .header-section {
+                min-width: unset;
+                margin-bottom: 1rem;
+            }
+            
+            .filters-section {
+                align-items: stretch;
+                min-width: unset;
+            }
+            
+            .filter-buttons {
+                justify-content: center;
+            }
+            
+            .filter-btn {
+                flex: 1;
+                min-width: 0;
+                text-align: center;
+            }
+            
+            .letter-header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .response-stats {
+                justify-content: space-between;
+            }
+        }
+
+        /* Animation */
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header administrateur -->
+    <header class="admin-header">
+        <div class="header-content">
+            <div class="admin-logo">⚙️</div>
+            <div class="header-text">
+                <h1 class="header-title" data-fr="Interface Administrateur - Direction Régionale" data-ar="واجهة الإدارة - المديرية الجهوية">Interface Administrateur - Direction Régionale</h1>
+                <p class="header-subtitle" data-fr="Gestion des Établissements et Communication" data-ar="إدارة المؤسسات والتواصل">Gestion des Établissements et Communication</p>
+            </div>
+            <nav class="admin-nav">
+                <a href="admin_school_dashboard.html" class="nav-link" data-fr="Écoles" data-ar="المدارس">Écoles</a>
+                <a href="#" class="nav-link active" data-fr="Lettres" data-ar="الرسائل">Lettres</a>
+                <a href="#" class="nav-link" data-fr="Statistiques" data-ar="الإحصائيات">Statistiques</a>
+            </nav>
+            <div class="language-toggle">
+                <span class="lang-flag active" id="frenchBtn" onclick="switchLanguage('fr')">🇫🇷</span>
+                <span class="lang-flag" id="arabicBtn" onclick="switchLanguage('ar')">🇲🇦</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenu principal -->
+    <main class="main-container">
+        <!-- En-tête et filtres combinés -->
+        <div class="page-header fade-in">
+            <div class="header-section">
+                <h2 class="page-title" data-fr="📧 Gestion des Lettres" data-ar="📧 إدارة الرسائل">📧 Gestion des Lettres</h2>
+                <p class="page-description" data-fr="Suivez les réponses aux demandes envoyées aux établissements et gérez les relances." data-ar="تابع الردود على الطلبات المرسلة إلى المؤسسات وإدارة التذكيرات.">
+                    Suivez les réponses aux demandes envoyées aux établissements et gérez les relances.
+                </p>
+            </div>
+            
+            <div class="filters-section">
+                <div class="filter-info">
+                    <span id="letterCount">0</span> <span data-fr="lettre(s) affichée(s)" data-ar="رسالة معروضة">lettre(s) affichée(s)</span>
+                </div>
+                
+                <div class="filter-buttons">
+                    <button class="filter-btn active" id="allFilter" onclick="applyFilter('all')" data-fr="📄 Toutes les lettres" data-ar="📄 جميع الرسائل">
+                        📄 Toutes les lettres
+                    </button>
+                    <button class="filter-btn" id="pendingFilter" onclick="applyFilter('pending')" data-fr="⏳ En attente de réponses" data-ar="⏳ في انتظار الردود">
+                        ⏳ En attente de réponses
+                    </button>
+                    <button class="filter-btn" id="completeFilter" onclick="applyFilter('complete')" data-fr="✅ Terminées" data-ar="✅ منتهية">
+                        ✅ Terminées
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistiques rapides -->
+        <!-- <div class="stats-container fade-in">
+            <div class="stat-card">
+                <div class="stat-number">8</div>
+                <div class="stat-label">Lettres envoyées ce mois</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-number">73%</div>
+                <div class="stat-label">Taux de réponse moyen</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-number">12</div>
+                <div class="stat-label">Écoles en attente</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-number">3</div>
+                <div class="stat-label">Lettres en cours</div>
+            </div>
+        </div> -->
+
+        <!-- Liste des lettres -->
+        <div class="letters-container fade-in">
+            <div class="letters-header">
+                <h3 class="letters-title" data-fr="Lettres Récentes" data-ar="الرسائل الأخيرة">Lettres Récentes</h3>
+            </div>
+
+            <!-- Les lettres envoyées seront affichées ici -->
+            <div class="empty-state">
+                <div class="empty-icon">📧</div>
+                <div class="empty-title" data-fr="Aucune lettre envoyée" data-ar="لا توجد رسائل مرسلة">Aucune lettre envoyée</div>
+                <div class="empty-description" data-fr="Les lettres envoyées aux établissements scolaires apparaîtront ici." data-ar="ستظهر الرسائل المرسلة إلى المؤسسات التعليمية هنا.">
+                    Les lettres envoyées aux établissements scolaires apparaîtront ici.
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let currentFilter = 'all';
+        // Language switching functionality with persistence
+        let currentLanguage = localStorage.getItem('selectedLanguage') || 'fr';
+
+        function switchLanguage(lang) {
+            currentLanguage = lang;
+            localStorage.setItem('selectedLanguage', lang);
+            const body = document.body;
+            
+            // Update direction
+            if (lang === 'ar') {
+                body.setAttribute('dir', 'rtl');
+            } else {
+                body.setAttribute('dir', 'ltr');
+            }
+            
+            // Update active flag
+            document.querySelectorAll('.lang-flag').forEach(flag => flag.classList.remove('active'));
+            document.getElementById(lang === 'fr' ? 'frenchBtn' : 'arabicBtn').classList.add('active');
+            
+            // Update all text elements
+            document.querySelectorAll('[data-fr]').forEach(element => {
+                const text = element.getAttribute(`data-${lang}`);
+                if (text) {
+                    element.textContent = text;
+                }
+            });
+        }
+
+        // Initialize language on page load
+        function initializeLanguage() {
+            switchLanguage(currentLanguage);
+        }
+
+        function viewLetterDetail(letterId) {
+            // Rediriger vers la page de détail de la lettre
+            window.location.href = `letter_detail_page.html?id=${letterId}`;
+        }
+
+        function applyFilter(filterType) {
+            currentFilter = filterType;
+            
+            // Mettre à jour les boutons de filtre
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`${filterType}Filter`).classList.add('active');
+            
+            // Filtrer les lettres
+            const letterItems = document.querySelectorAll('.letter-item');
+            let visibleCount = 0;
+            
+            letterItems.forEach(item => {
+                const statusBadge = item.querySelector('.status-badge');
+                const isComplete = statusBadge.classList.contains('complete');
+                const isPending = statusBadge.classList.contains('pending');
+                
+                let shouldShow = false;
+                
+                switch(filterType) {
+                    case 'all':
+                        shouldShow = true;
+                        break;
+                    case 'pending':
+                        shouldShow = isPending;
+                        break;
+                    case 'complete':
+                        shouldShow = isComplete;
+                        break;
+                }
+                
+                if (shouldShow) {
+                    item.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+            
+            // Mettre à jour le compteur
+            document.getElementById('letterCount').textContent = visibleCount;
+        }
+
+        // Animation d'entrée progressive
+        const items = document.querySelectorAll('.letter-item');
+        items.forEach((item, index) => {
+            item.style.animationDelay = `${index * 0.1}s`;
+            item.classList.add('fade-in');
+        });
+        
+        // Initialize language when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeLanguage();
+        });
+        
+        // Initialiser le compteur à 0
+        document.getElementById('letterCount').textContent = '0';
+    </script>
+</body>
+</html>

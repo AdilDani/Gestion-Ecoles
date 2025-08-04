@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>État Général - Direction Régionale</title>
+    <style>
+        /* Palette de couleurs du gouvernement marocain */
+        :root {
+            --primary-red: #C41E3A;
+            --primary-green: #006233;
+            --light-green: #228B22;
+            --accent-orange: #FF8C00;
+            --neutral-white: #FFFFFF;
+            --light-gray: #F8F9FA;
+            --medium-gray: #6C757D;
+            --dark-gray: #343A40;
+            --border-gray: #DEE2E6;
+            --success-green: #28A745;
+            --warning-orange: #FD7E14;
+            --danger-red: #DC3545;
+            
+            --shadow-light: 0 2px 4px rgba(0,0,0,0.1);
+            --shadow-medium: 0 4px 8px rgba(0,0,0,0.15);
+            --shadow-heavy: 0 8px 16px rgba(0,0,0,0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-gray);
+            color: var(--dark-gray);
+            line-height: 1.6;
+        }
+
+        /* Header gouvernemental */
+        .header {
+            background: linear-gradient(135deg, var(--primary-green) 0%, #004D40 100%);
+            color: var(--neutral-white);
+            padding: 1rem 0;
+            box-shadow: var(--shadow-medium);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .gov-logo {
+            width: 50px;
+            height: 50px;
+            background: var(--neutral-white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-green);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .header-text {
+            flex: 1;
+        }
+
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .header-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        /* Navigation breadcrumb */
+        .breadcrumb {
+            background: var(--neutral-white);
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-gray);
+        }
+
+        .breadcrumb-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .breadcrumb a {
+            color: var(--primary-green);
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .breadcrumb-separator {
+            color: var(--medium-gray);
+        }
+
+        /* Container principal */
+        .main-container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        /* Carte d'information */
+        .info-card {
+            background: var(--neutral-white);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: var(--shadow-medium);
+            border-left: 4px solid var(--primary-green);
+            margin-bottom: 2rem;
+        }
+
+        .info-title {
+            color: var(--primary-green);
+            font-size: 1.6rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .info-description {
+            color: var(--medium-gray);
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .school-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .info-item {
+            background: var(--light-gray);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-gray);
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: var(--primary-green);
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .info-value {
+            color: var(--dark-gray);
+            font-size: 1rem;
+        }
+
+        /* Formulaire de rapport */
+        .report-form {
+            background: var(--neutral-white);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: var(--shadow-medium);
+            margin-bottom: 2rem;
+        }
+
+        .form-title {
+            color: var(--dark-gray);
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-section {
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-gray);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: var(--light-gray);
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-gray);
+            font-weight: 600;
+            color: var(--dark-gray);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-content {
+            padding: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: var(--dark-gray);
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .form-textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 1rem;
+            border: 2px solid var(--border-gray);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 1rem;
+            line-height: 1.5;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary-green);
+            box-shadow: 0 0 0 3px rgba(0, 98, 51, 0.1);
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border-gray);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 1rem;
+            background: var(--neutral-white);
+            transition: border-color 0.3s ease;
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: var(--primary-green);
+            box-shadow: 0 0 0 3px rgba(0, 98, 51, 0.1);
+        }
+
+        .urgency-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .urgency-option {
+            padding: 0.75rem;
+            border: 2px solid var(--border-gray);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .urgency-option.low {
+            border-color: var(--success-green);
+            color: var(--success-green);
+        }
+
+        .urgency-option.medium {
+            border-color: var(--warning-orange);
+            color: var(--warning-orange);
+        }
+
+        .urgency-option.high {
+            border-color: var(--accent-orange);
+            color: var(--accent-orange);
+        }
+
+        .urgency-option.urgent {
+            border-color: var(--danger-red);
+            color: var(--danger-red);
+        }
+
+        .urgency-option:hover,
+        .urgency-option.selected {
+            background-color: currentColor;
+            color: var(--neutral-white);
+        }
+
+        /* Photo upload placeholder */
+        .photo-upload {
+            border: 2px dashed var(--border-gray);
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            background: var(--light-gray);
+            margin-top: 1rem;
+        }
+
+        .photo-upload-icon {
+            font-size: 2rem;
+            color: var(--medium-gray);
+            margin-bottom: 0.5rem;
+        }
+
+        .photo-upload-text {
+            color: var(--medium-gray);
+            font-size: 0.9rem;
+        }
+
+        .photo-coming-soon {
+            background: var(--warning-orange);
+            color: var(--neutral-white);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+            display: inline-block;
+        }
+
+        /* Boutons d'action */
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-green) 0%, #004D40 100%);
+            color: var(--neutral-white);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-heavy);
+        }
+
+        .btn-secondary {
+            background: var(--neutral-white);
+            color: var(--medium-gray);
+            border: 2px solid var(--border-gray);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary-green);
+            color: var(--primary-green);
+        }
+
+        /* Historique */
+        .history-card {
+            background: var(--neutral-white);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: var(--shadow-medium);
+        }
+
+        .history-title {
+            color: var(--dark-gray);
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .history-item {
+            background: var(--light-gray);
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 3px solid var(--primary-green);
+            margin-bottom: 1rem;
+        }
+
+        .history-date {
+            font-weight: 600;
+            color: var(--primary-green);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .history-content {
+            color: var(--dark-gray);
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .header-content,
+            .breadcrumb-content {
+                padding: 0 1rem;
+            }
+            
+            .main-container {
+                padding: 0 1rem;
+            }
+            
+            .info-card,
+            .report-form,
+            .history-card {
+                padding: 1.5rem;
+            }
+            
+            .school-info {
+                grid-template-columns: 1fr;
+            }
+            
+            .urgency-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                text-align: center;
+                justify-content: center;
+            }
+        }
+
+        /* Animation */
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header gouvernemental -->
+    <header class="header">
+        <div class="header-content">
+            <div class="gov-logo">🏛️</div>
+            <div class="header-text">
+                <h1 class="header-title">Direction Régionale de l'Éducation</h1>
+                <p class="header-subtitle">Suivi des Projets et État des Établissements Scolaires</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Breadcrumb navigation -->
+    <nav class="breadcrumb">
+        <div class="breadcrumb-content">
+            <a href="acceuil.html">Accueil</a>
+            <span class="breadcrumb-separator">›</span>
+            <span>État Général</span>
+        </div>
+    </nav>
+
+    <!-- Contenu principal -->
+    <main class="main-container">
+        <!-- Information générale -->
+        <div class="info-card fade-in">
+            <h2 class="info-title">
+                🏫 Rapport d'État Général de l'Établissement
+            </h2>
+            
+            <p class="info-description">
+                Signalez l'état des infrastructures, équipements et besoins de votre établissement 
+                pour une meilleure planification des interventions et améliorations.
+            </p>
+            
+            <div class="school-info">
+                <div class="info-item">
+                    <div class="info-label">Établissement</div>
+                    <div class="info-value">École Primaire Al-Amal</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Directeur</div>
+                    <div class="info-value">M. Ahmed Benali</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Région</div>
+                    <div class="info-value">Fès-Meknès</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Date du Rapport</div>
+                    <div class="info-value">27 Juillet 2025</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulaire de rapport -->
+        <div class="report-form fade-in">
+            <h3 class="form-title">
+                📝 Signalement d'État
+            </h3>
+            
+            <form>
+                <!-- Section Infrastructure -->
+                <div class="form-section">
+                    <div class="section-header">
+                        🏗️ Infrastructure et Bâtiments
+                    </div>
+                    <div class="section-content">
+                        <div class="form-group">
+                            <label for="infrastructure" class="form-label">
+                                État des salles de classe, murs, toitures, fondations
+                            </label>
+                            <textarea 
+                                id="infrastructure" 
+                                name="infrastructure" 
+                                class="form-textarea"
+                                placeholder="Ex: Fissures dans le mur de la salle 3, infiltration d'eau dans le couloir principal, peinture écaillée..."
+                            ></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section Équipements -->
+                <div class="form-section">
+                    <div class="section-header">
+                        🚿 Équipements et Installations
+                    </div>
+                    <div class="section-content">
+                        <div class="form-group">
+                            <label for="equipment" class="form-label">
+                                Sanitaires, électricité, chauffage, plomberie
+                            </label>
+                            <textarea 
+                                id="equipment" 
+                                name="equipment" 
+                                class="form-textarea"
+                                placeholder="Ex: Besoin de 3 toilettes supplémentaires, éclairage défaillant en salle 2, robinets qui fuient..."
+                            ></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section Mobilier -->
+                <div class="form-section">
+                    <div class="section-header">
+                        🪑 Mobilier et Matériel Pédagogique
+                    </div>
+                    <div class="section-content">
+                        <div class="form-group">
+                            <label for="furniture" class="form-label">
+                                Tables, chaises, tableaux, portes, fenêtres
+                            </label>
+                            <textarea 
+                                id="furniture" 
+                                name="furniture" 
+                                class="form-textarea"
+                                placeholder="Ex: 15 chaises cassées à remplacer, tableau noir illisible, stores à réparer, portes trop bruyantes..."
+                            ></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section Sécurité -->
+                <div class="form-section">
+                    <div class="section-header">
+                        🛡️ Sécurité et Espaces Extérieurs
+                    </div>
+                    <div class="section-content">
+                        <div class="form-group">
+                            <label for="security" class="form-label">
+                                Clôtures, portails, cour de récréation, éclairage extérieur
+                            </label>
+                            <textarea 
+                                id="security" 
+                                name="security" 
+                                class="form-textarea"
+                                placeholder="Ex: Portail d'entrée ne ferme plus, éclairage de la cour insuffisant, sol de la cour abîmé..."
+                            ></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Niveau d'urgence -->
+                <div class="form-section">
+                    <div class="section-header">
+                        ⚠️ Niveau d'Urgence Global
+                    </div>
+                    <div class="section-content">
+                        <div class="form-group">
+                            <label class="form-label">
+                                Évaluez l'urgence générale de ces signalements
+                            </label>
+                            <div class="urgency-grid">
+                                <div class="urgency-option low" data-urgency="low">
+                                    🟢 Faible<br>
+                                    <small>Peut attendre</small>
+                                </div>
+                                <div class="urgency-option medium" data-urgency="medium">
+                                    🟡 Moyen<br>
+                                    <small>Dans le mois</small>
+                                </div>
+                                <div class="urgency-option high" data-urgency="high">
+                                    🟠 Élevé<br>
+                                    <small>Dans la semaine</small>
+                                </div>
+                                <div class="urgency-option urgent" data-urgency="urgent">
+                                    🔴 Urgent<br>
+                                    <small>Immédiat</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Photos (fonctionnalité future) -->
+                <div class="form-section">
+                    <div class="section-header">
+                        📷 Documentation Visuelle
+                    </div>
+                    <div class="section-content">
+                        <div class="photo-upload">
+                            <div class="photo-upload-icon">📷</div>
+                            <div class="photo-upload-text">
+                                Ajout de photos pour documentation<br>
+                                <span class="photo-coming-soon">Bientôt disponible</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <a href="acceuil.html" class="btn btn-secondary">
+                        ← Retour
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        📤 Envoyer le Rapport
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Historique des signalements -->
+        <div class="history-card fade-in">
+            <h3 class="history-title">
+                📋 Historique des Signalements
+            </h3>
+            
+            <div class="history-item">
+                <div class="history-date">15 Juin 2025 - Urgence Moyenne</div>
+                <div class="history-content">
+                    <strong>Infrastructure:</strong> Infiltration d'eau dans le couloir principal après les pluies.<br>
+                    <strong>Équipements:</strong> 2 toilettes hors service depuis une semaine.<br>
+                    <strong>Mobilier:</strong> Besoin de 10 nouvelles chaises pour la salle 4.
+                </div>
+            </div>
+            
+            <div class="history-item">
+                <div class="history-date">20 Mai 2025 - Urgence Élevée</div>
+                <div class="history-content">
+                    <strong>Sécurité:</strong> Portail d'entrée principale ne ferme plus correctement. Risque de sécurité pour les élèves.<br>
+                    <strong>Infrastructure:</strong> Fissure importante dans le mur de la salle 2.
+                </div>
+            </div>
+            
+            <div class="history-item">
+                <div class="history-date">25 Avril 2025 - Urgence Faible</div>
+                <div class="history-content">
+                    <strong>Mobilier:</strong> Stores des fenêtres de la salle 1 et 3 à réparer.<br>
+                    <strong>Équipements:</strong> Éclairage de la cour de récréation insuffisant le soir.
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Gestion des niveaux d'urgence
+        const urgencyOptions = document.querySelectorAll('.urgency-option');
+        
+        urgencyOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                // Retirer la sélection des autres options
+                urgencyOptions.forEach(opt => opt.classList.remove('selected'));
+                // Ajouter la sélection à l'option cliquée
+                this.classList.add('selected');
+            });
+        });
+
+        // Animation d'entrée progressive
+        const sections = document.querySelectorAll('.form-section');
+        sections.forEach((section, index) => {
+            section.style.animationDelay = `${index * 0.1}s`;
+            section.classList.add('fade-in');
+        });
+    </script>
+</body>
+</html>
