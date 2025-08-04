@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Direction Régionale - Suivi des Projets Scolaires</title>
+    <style>
+        /* Palette de couleurs du gouvernement marocain */
+        :root {
+            --primary-red: #C41E3A;        /* Rouge du drapeau marocain */
+            --primary-green: #006233;      /* Vert du drapeau marocain */
+            --light-green: #228B22;        /* Vert plus clair pour les hovers */
+            --accent-orange: #FF8C00;      /* Orange gouvernemental (MASSAR) */
+            --neutral-white: #FFFFFF;      /* Blanc principal */
+            --light-gray: #F8F9FA;         /* Gris très clair pour arrière-plans */
+            --medium-gray: #6C757D;        /* Gris moyen pour le texte secondaire */
+            --dark-gray: #343A40;          /* Gris foncé pour le texte principal */
+            --border-gray: #DEE2E6;        /* Gris pour les bordures */
+            
+            /* Ombres */
+            --shadow-light: 0 2px 4px rgba(0,0,0,0.1);
+            --shadow-medium: 0 4px 8px rgba(0,0,0,0.15);
+            --shadow-heavy: 0 8px 16px rgba(0,0,0,0.2);
+        }
+
+        /* Reset et styles de base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-gray);
+            color: var(--dark-gray);
+            line-height: 1.6;
+            direction: ltr;
+            transition: direction 0.3s ease;
+        }
+
+        /* RTL Support */
+        body[dir="rtl"] {
+            direction: rtl;
+            font-family: 'Arial', 'Tahoma', sans-serif;
+        }
+
+        /* Language Toggle */
+        .language-toggle {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-left: auto;
+        }
+
+        body[dir="rtl"] .language-toggle {
+            margin-left: 0;
+            margin-right: auto;
+        }
+
+        .lang-flag {
+            font-size: 1.2rem;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .lang-flag:hover {
+            opacity: 0.8;
+            transform: scale(1.1);
+        }
+
+        .lang-flag.active {
+            opacity: 1;
+            transform: scale(1.2);
+        }
+
+        /* Header gouvernemental */
+        .header {
+            background: linear-gradient(135deg, var(--primary-red) 0%, #B71C1C 100%);
+            color: var(--neutral-white);
+            padding: 1rem 0;
+            box-shadow: var(--shadow-medium);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .gov-logo {
+            width: 50px;
+            height: 50px;
+            background: var(--neutral-white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-red);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .header-text {
+            flex: 1;
+        }
+
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .header-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        /* Container principal */
+        .main-container {
+            max-width: 800px;
+            margin: 3rem auto;
+            padding: 0 2rem;
+        }
+
+        /* Carte de bienvenue */
+        .welcome-card {
+            background: var(--neutral-white);
+            border-radius: 12px;
+            padding: 2.5rem;
+            box-shadow: var(--shadow-medium);
+            border-left: 4px solid var(--primary-green);
+            margin-bottom: 2rem;
+        }
+
+        .welcome-title {
+            color: var(--primary-green);
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .welcome-text {
+            color: var(--medium-gray);
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .user-info {
+            background: var(--light-gray);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-gray);
+        }
+
+        .user-info strong {
+            color: var(--primary-green);
+        }
+
+        /* Conteneur des boutons */
+        .actions-container {
+            background: var(--neutral-white);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: var(--shadow-medium);
+        }
+
+        .actions-title {
+            color: var(--dark-gray);
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .buttons-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        /* Styles des boutons principaux */
+        .action-button {
+            background: var(--neutral-white);
+            border: 2px solid var(--border-gray);
+            border-radius: 12px;
+            padding: 2rem 1.5rem;
+            text-decoration: none;
+            color: var(--dark-gray);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-heavy);
+            border-color: var(--primary-green);
+        }
+
+        .action-button.received-letters {
+            border-color: var(--primary-red);
+        }
+
+        .action-button.received-letters:hover {
+            border-color: var(--primary-red);
+            background: linear-gradient(135deg, #FFF5F5 0%, #FFEBEE 100%);
+        }
+
+        .action-button.general-update {
+            border-color: var(--primary-green);
+        }
+
+        .action-button.general-update:hover {
+            border-color: var(--primary-green);
+            background: linear-gradient(135deg, #F3F8F3 0%, #E8F5E8 100%);
+        }
+
+        .button-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .received-letters .button-icon {
+            background: linear-gradient(135deg, var(--primary-red) 0%, #B71C1C 100%);
+            color: var(--neutral-white);
+        }
+
+        .general-update .button-icon {
+            background: linear-gradient(135deg, var(--primary-green) 0%, #004D40 100%);
+            color: var(--neutral-white);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: var(--primary-red);
+            color: var(--neutral-white);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .button-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .button-description {
+            font-size: 0.9rem;
+            color: var(--medium-gray);
+            line-height: 1.4;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 4rem;
+            padding: 2rem 0;
+            text-align: center;
+            color: var(--medium-gray);
+            border-top: 1px solid var(--border-gray);
+        }
+
+        .footer-text {
+            font-size: 0.9rem;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .header-content {
+                padding: 0 1rem;
+            }
+            
+            .header-title {
+                font-size: 1.2rem;
+            }
+            
+            .main-container {
+                padding: 0 1rem;
+                margin: 2rem auto;
+            }
+            
+            .welcome-card,
+            .actions-container {
+                padding: 1.5rem;
+            }
+            
+            .buttons-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .action-button {
+                padding: 1.5rem 1rem;
+            }
+            
+            .button-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Classes utilitaires */
+        .text-center { text-align: center; }
+        .mb-1 { margin-bottom: 0.5rem; }
+        .mb-2 { margin-bottom: 1rem; }
+        .mb-3 { margin-bottom: 1.5rem; }
+        
+        /* Animation d'entrée */
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header gouvernemental -->
+    <header class="header">
+        <div class="header-content">
+            <div class="gov-logo">
+                🏛️
+            </div>
+            <div class="header-text">
+                <h1 class="header-title" data-fr="Direction Régionale de l'Éducation" data-ar="المديرية الجهوية للتربية والتعليم">Direction Régionale de l'Éducation</h1>
+                <p class="header-subtitle" data-fr="Suivi des Projets et État des Établissements Scolaires" data-ar="متابعة المشاريع وحالة المؤسسات التعليمية">Suivi des Projets et État des Établissements Scolaires</p>
+            </div>
+            <div class="language-toggle">
+                <span class="lang-flag active" id="frenchBtn" onclick="switchLanguage('fr')">🇫🇷</span>
+                <span class="lang-flag" id="arabicBtn" onclick="switchLanguage('ar')">🇲🇦</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenu principal -->
+    <main class="main-container">
+        <!-- Carte de bienvenue -->
+        <div class="welcome-card fade-in">
+            <h2 class="welcome-title" data-fr="Bienvenue sur le Portail de Suivi" data-ar="مرحباً بكم في بوابة المتابعة">Bienvenue sur le Portail de Suivi</h2>
+            <p class="welcome-text" data-fr="Ce portail vous permet de communiquer efficacement avec la Direction Régionale concernant l'avancement de vos projets et l'état général de votre établissement." data-ar="تتيح لكم هذه البوابة التواصل بفعالية مع المديرية الجهوية حول تقدم مشاريعكم والوضع العام لمؤسستكم.">
+                Ce portail vous permet de communiquer efficacement avec la Direction Régionale 
+                concernant l'avancement de vos projets et l'état général de votre établissement.
+            </p>
+            <div class="user-info">
+                <strong data-fr="Établissement :" data-ar="المؤسسة:">Établissement :</strong> <span data-fr="[Nom de l'École]" data-ar="[اسم المدرسة]">[Nom de l'École]</span><br>
+                <strong data-fr="Directeur :" data-ar="المدير:">Directeur :</strong> <span data-fr="[Nom du Directeur]" data-ar="[اسم المدير]">[Nom du Directeur]</span><br>
+                <strong data-fr="Région :" data-ar="المنطقة:">Région :</strong> <span data-fr="Fès-Meknès" data-ar="فاس - مكناس">Fès-Meknès</span>
+            </div>
+        </div>
+
+        <!-- Actions disponibles -->
+        <div class="actions-container fade-in">
+            <h3 class="actions-title" data-fr="Menu Principal" data-ar="القائمة الرئيسية">Menu Principal</h3>
+            
+            <div class="buttons-grid">
+                <!-- Bouton Lettres Reçues -->
+                <a href="received_letters.html" class="action-button received-letters">
+                    <div class="button-icon">📧</div>
+                    <h4 class="button-title" data-fr="Lettres Reçues" data-ar="الرسائل المستلمة">Lettres Reçues</h4>
+                    <p class="button-description" data-fr="Consulter et répondre aux demandes de la Direction Régionale" data-ar="الاطلاع على طلبات المديرية الجهوية والرد عليها">
+                        Consulter et répondre aux demandes de la Direction Régionale
+                    </p>
+                    <div class="notification-badge">3</div>
+                </a>
+
+                <!-- Bouton Mise à Jour Générale -->
+                <a href="general_update.html" class="action-button general-update">
+                    <div class="button-icon">🏫</div>
+                    <h4 class="button-title" data-fr="Mise à Jour Générale" data-ar="التحديث العام">Mise à Jour Générale</h4>
+                    <p class="button-description" data-fr="Envoyer volontairement un rapport sur l'état de l'établissement" data-ar="إرسال تقرير طوعي حول وضع المؤسسة">
+                        Envoyer volontairement un rapport sur l'état de l'établissement
+                    </p>
+                </a>
+            </div>
+
+            <!-- Historique des soumissions récentes -->
+            <div style="margin-top: 2rem; background: var(--light-gray); border-radius: 8px; padding: 1.5rem;">
+                <h4 style="color: var(--dark-gray); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;" data-fr="📋 Dernières Activités" data-ar="📋 النشاطات الأخيرة">
+                    📋 Dernières Activités
+                </h4>
+                <div style="display: grid; gap: 1rem;">
+                    <div style="background: var(--neutral-white); padding: 1rem; border-radius: 6px; border-left: 3px solid var(--primary-red);">
+                        <div style="font-weight: 600; color: var(--dark-gray); font-size: 0.9rem;" data-fr="Réponse Envoyée - Rapport de Projet" data-ar="تم إرسال الرد - تقرير المشروع">Réponse Envoyée - Rapport de Projet</div>
+                        <div style="color: var(--medium-gray); font-size: 0.8rem;" data-fr="28 Juin 2025 - ✅ Traité" data-ar="28 يونيو 2025 - ✅ تم المعالجة">28 Juin 2025 - ✅ Traité</div>
+                    </div>
+                    <div style="background: var(--neutral-white); padding: 1rem; border-radius: 6px; border-left: 3px solid var(--primary-green);">
+                        <div style="font-weight: 600; color: var(--dark-gray); font-size: 0.9rem;" data-fr="Mise à Jour Générale Envoyée" data-ar="تم إرسال التحديث العام">Mise à Jour Générale Envoyée</div>
+                        <div style="color: var(--medium-gray); font-size: 0.8rem;" data-fr="15 Juin 2025 - ✅ Traité" data-ar="15 يونيو 2025 - ✅ تم المعالجة">15 Juin 2025 - ✅ Traité</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p class="footer-text" data-fr="© 2025 Direction Régionale de l'Éducation - Royaume du Maroc" data-ar="© 2025 المديرية الجهوية للتربية والتعليم - المملكة المغربية">
+            © 2025 Direction Régionale de l'Éducation - Royaume du Maroc
+        </p>
+    </footer>
+
+    <script>
+        // Language switching functionality with persistence
+        let currentLanguage = localStorage.getItem('selectedLanguage') || 'fr';
+
+        function switchLanguage(lang) {
+            currentLanguage = lang;
+            localStorage.setItem('selectedLanguage', lang);
+            const body = document.body;
+            
+            // Update direction
+            if (lang === 'ar') {
+                body.setAttribute('dir', 'rtl');
+            } else {
+                body.setAttribute('dir', 'ltr');
+            }
+            
+            // Update active flag
+            document.querySelectorAll('.lang-flag').forEach(flag => flag.classList.remove('active'));
+            document.getElementById(lang === 'fr' ? 'frenchBtn' : 'arabicBtn').classList.add('active');
+            
+            // Update all text elements
+            document.querySelectorAll('[data-fr]').forEach(element => {
+                const text = element.getAttribute(`data-${lang}`);
+                if (text) {
+                    element.textContent = text;
+                }
+            });
+        }
+
+        // Initialize language on page load
+        function initializeLanguage() {
+            switchLanguage(currentLanguage);
+        }
+
+        // Initialize language when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeLanguage();
+        });
+    </script>
+</body>
+</html>

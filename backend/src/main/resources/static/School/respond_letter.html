@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Répondre à la Demande - Direction Régionale</title>
+    <style>
+        /* Palette de couleurs du gouvernement marocain */
+        :root {
+            --primary-red: #C41E3A;
+            --primary-green: #006233;
+            --light-green: #228B22;
+            --accent-orange: #FF8C00;
+            --neutral-white: #FFFFFF;
+            --light-gray: #F8F9FA;
+            --medium-gray: #6C757D;
+            --dark-gray: #343A40;
+            --border-gray: #DEE2E6;
+            --success-green: #28A745;
+            --warning-orange: #FD7E14;
+            
+            --shadow-light: 0 2px 4px rgba(0,0,0,0.1);
+            --shadow-medium: 0 4px 8px rgba(0,0,0,0.15);
+            --shadow-heavy: 0 8px 16px rgba(0,0,0,0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-gray);
+            color: var(--dark-gray);
+            line-height: 1.6;
+            direction: ltr;
+            transition: direction 0.3s ease;
+        }
+
+        /* RTL Support */
+        body[dir="rtl"] {
+            direction: rtl;
+            font-family: 'Arial', 'Tahoma', sans-serif;
+        }
+
+        /* Language Toggle */
+        .language-toggle {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-left: auto;
+        }
+
+        body[dir="rtl"] .language-toggle {
+            margin-left: 0;
+            margin-right: auto;
+        }
+
+        .lang-flag {
+            font-size: 1.2rem;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .lang-flag:hover {
+            opacity: 0.8;
+            transform: scale(1.1);
+        }
+
+        .lang-flag.active {
+            opacity: 1;
+            transform: scale(1.2);
+        }
+
+        /* Header gouvernemental */
+        .header {
+            background: linear-gradient(135deg, var(--primary-red) 0%, #B71C1C 100%);
+            color: var(--neutral-white);
+            padding: 1rem 0;
+            box-shadow: var(--shadow-medium);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .gov-logo {
+            width: 50px;
+            height: 50px;
+            background: var(--neutral-white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-red);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .header-text {
+            flex: 1;
+        }
+
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .header-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        /* Navigation breadcrumb */
+        .breadcrumb {
+            background: var(--neutral-white);
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-gray);
+        }
+
+        .breadcrumb-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .breadcrumb a {
+            color: var(--primary-green);
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .breadcrumb-separator {
+            color: var(--medium-gray);
+        }
+
+        /* Container principal */
+        .main-container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        /* Bouton retour */
+        .back-button {
+            background: var(--neutral-white);
+            color: var(--primary-red);
+            padding: 0.75rem 1.5rem;
+            border: 2px solid var(--primary-red);
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: var(--primary-red);
+            color: var(--neutral-white);
+        }
+
+        /* Informations de la demande */
+        .request-info-card {
+            background: var(--neutral-white);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: var(--shadow-medium);
+            border-left: 4px solid var(--primary-red);
+            margin-bottom: 2rem;
+        }
+
+        .request-title {
+            color: var(--primary-red);
+            font-size: 1.6rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .request-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .meta-item {
+            background: var(--light-gray);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-gray);
+        }
+
+        .meta-label {
+            font-weight: 600;
+            color: var(--primary-red);
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .meta-value {
+            color: var(--dark-gray);
+            font-size: 1rem;
+        }
+
+        .request-description {
+            background: var(--light-gray);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-gray);
+            font-style: italic;
+            color: var(--medium-gray);
+        }
+
+        /* Formulaire de réponse */
+        .response-form {
+            background: var(--neutral-white);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: var(--shadow-medium);
+            margin-bottom: 2rem;
+        }
+
+        .form-title {
+            color: var(--dark-gray);
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Tableau de réponse structuré */
+        .response-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2rem;
+            border: 2px solid var(--border-gray);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .response-table th {
+            background: var(--primary-red);
+            color: var(--neutral-white);
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .response-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-gray);
+            vertical-align: top;
+        }
+
+        .response-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .response-table tr:nth-child(even) {
+            background: var(--light-gray);
+        }
+
+        .table-label {
+            font-weight: 600;
+            color: var(--dark-gray);
+            width: 200px;
+        }
+
+        .table-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border-gray);
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .table-input:focus {
+            outline: none;
+            border-color: var(--primary-red);
+            box-shadow: 0 0 0 3px rgba(196, 30, 58, 0.1);
+        }
+
+        .table-textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 0.75rem;
+            border: 2px solid var(--border-gray);
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 1rem;
+            line-height: 1.5;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+        }
+
+        .table-textarea:focus {
+            outline: none;
+            border-color: var(--primary-red);
+            box-shadow: 0 0 0 3px rgba(196, 30, 58, 0.1);
+        }
+
+        .table-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border-gray);
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 1rem;
+            background: var(--neutral-white);
+            transition: border-color 0.3s ease;
+        }
+
+        .table-select:focus {
+            outline: none;
+            border-color: var(--primary-red);
+            box-shadow: 0 0 0 3px rgba(196, 30, 58, 0.1);
+        }
+
+        /* Slider de pourcentage */
+        .percentage-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .percentage-slider {
+            flex: 1;
+            height: 8px;
+            border-radius: 4px;
+            background: var(--border-gray);
+            outline: none;
+            appearance: none;
+        }
+
+        .percentage-slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary-red);
+            cursor: pointer;
+        }
+
+        .percentage-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary-red);
+            cursor: pointer;
+            border: none;
+        }
+
+        .percentage-display {
+            font-weight: 600;
+            color: var(--primary-red);
+            font-size: 1.1rem;
+            min-width: 50px;
+        }
+
+        /* Boutons d'action */
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-red) 0%, #B71C1C 100%);
+            color: var(--neutral-white);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-heavy);
+        }
+
+        .btn-secondary {
+            background: var(--neutral-white);
+            color: var(--medium-gray);
+            border: 2px solid var(--border-gray);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary-red);
+            color: var(--primary-red);
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .header-content,
+            .breadcrumb-content {
+                padding: 0 1rem;
+            }
+            
+            .main-container {
+                padding: 0 1rem;
+            }
+            
+            .request-info-card,
+            .response-form {
+                padding: 1.5rem;
+            }
+            
+            .request-meta {
+                grid-template-columns: 1fr;
+            }
+            
+            .response-table th,
+            .response-table td {
+                padding: 0.75rem;
+            }
+            
+            .table-label {
+                width: auto;
+                display: block;
+                margin-bottom: 0.5rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                text-align: center;
+                justify-content: center;
+            }
+        }
+
+        /* Animation */
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header gouvernemental -->
+    <header class="header">
+        <div class="header-content">
+            <div class="gov-logo">🏛️</div>
+            <div class="header-text">
+                <h1 class="header-title" data-fr="Direction Régionale de l'Éducation" data-ar="المديرية الجهوية للتربية والتعليم">Direction Régionale de l'Éducation</h1>
+                <p class="header-subtitle" data-fr="Suivi des Projets et État des Établissements Scolaires" data-ar="متابعة المشاريع وحالة المؤسسات التعليمية">Suivi des Projets et État des Établissements Scolaires</p>
+            </div>
+            <div class="language-toggle">
+                <span class="lang-flag active" id="frenchBtn" onclick="switchLanguage('fr')">🇫🇷</span>
+                <span class="lang-flag" id="arabicBtn" onclick="switchLanguage('ar')">🇲🇦</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Breadcrumb navigation -->
+    <nav class="breadcrumb">
+        <div class="breadcrumb-content">
+            <a href="acceuil.html" data-fr="Accueil" data-ar="الرئيسية">Accueil</a>
+            <span class="breadcrumb-separator">›</span>
+            <a href="received_letters.html" data-fr="Lettres Reçues" data-ar="الرسائل المستلمة">Lettres Reçues</a>
+            <span class="breadcrumb-separator">›</span>
+            <span data-fr="Répondre" data-ar="رد">Répondre</span>
+        </div>
+    </nav>
+
+    <!-- Contenu principal -->
+    <main class="main-container">
+        <!-- Bouton retour -->
+        <a href="received_letters.html" class="back-button fade-in" data-fr="← Retour aux lettres" data-ar="← العودة للرسائل">
+            ← Retour aux lettres
+        </a>
+
+        <!-- Informations de la demande -->
+        <div class="request-info-card fade-in">
+            <h2 class="request-title" data-fr="📊 Réponse au Rapport de Projet" data-ar="📊 الرد على تقرير المشروع">
+                📊 Réponse au Rapport de Projet
+            </h2>
+            
+            <div class="request-meta">
+                <div class="meta-item">
+                    <div class="meta-label" data-fr="Type de Demande" data-ar="نوع الطلب">Type de Demande</div>
+                    <div class="meta-value" data-fr="Rapport de Projet" data-ar="تقرير المشروع">Rapport de Projet</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label" data-fr="Date de Réception" data-ar="تاريخ الاستلام">Date de Réception</div>
+                    <div class="meta-value" data-fr="25 Juillet 2025 - 14:30" data-ar="25 يوليو 2025 - 14:30">25 Juillet 2025 - 14:30</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label" data-fr="Échéance" data-ar="الموعد النهائي">Échéance</div>
+                    <div class="meta-value" data-fr="30 Juillet 2025" data-ar="30 يوليو 2025">30 Juillet 2025</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label" data-fr="Projet Concerné" data-ar="المشروع المعني">Projet Concerné</div>
+                    <div class="meta-value" data-fr="[ID du Projet]" data-ar="[معرف المشروع]">[ID du Projet]</div>
+                </div>
+            </div>
+            
+            <div class="request-description">
+                <strong data-fr="Description:" data-ar="الوصف:">Description:</strong> <span data-fr="Mise à jour sur l'avancement des travaux de construction et rénovation. Veuillez fournir les détails sur l'état actuel du projet, les pourcentages d'achèvement et tout problème rencontré." data-ar="تحديث حول تقدم أعمال البناء والتجديد. يرجى تقديم تفاصيل حول الوضع الحالي للمشروع ونسب الإنجاز وأي مشاكل واجهتموها.">Mise à jour sur l'avancement des travaux de construction et rénovation. Veuillez fournir les détails sur l'état actuel du projet, les pourcentages d'achèvement et tout problème rencontré.</span>
+            </div>
+        </div>
+
+        <!-- Formulaire de réponse -->
+        <div class="response-form fade-in">
+            <h3 class="form-title" data-fr="✏️ Formulaire de Réponse" data-ar="✏️ نموذج الرد">
+                ✏️ Formulaire de Réponse
+            </h3>
+            
+            <form>
+                <table class="response-table">
+                    <thead>
+                        <tr>
+                            <th data-fr="Élément" data-ar="العنصر">Élément</th>
+                            <th data-fr="Réponse" data-ar="الرد">Réponse</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="table-label" data-fr="Pourcentage d'Achèvement Global" data-ar="نسبة الإنجاز العامة">Pourcentage d'Achèvement Global</td>
+                            <td>
+                                <div class="percentage-container">
+                                    <input type="range" class="percentage-slider" id="globalProgress" 
+                                           min="0" max="100" value="65" 
+                                           oninput="updatePercentage('global', this.value)">
+                                    <span class="percentage-display" id="globalDisplay">65%</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="table-label" data-fr="État des Travaux de Gros Œuvre" data-ar="حالة أعمال البناء الأساسية">État des Travaux de Gros Œuvre</td>
+                            <td>
+                                <div class="percentage-container">
+                                    <input type="range" class="percentage-slider" id="structureProgress" 
+                                           min="0" max="100" value="80" 
+                                           oninput="updatePercentage('structure', this.value)">
+                                    <span class="percentage-display" id="structureDisplay">80%</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="table-label" data-fr="Installation Électrique" data-ar="التركيبات الكهربائية">Installation Électrique</td>
+                            <td>
+                                <div class="percentage-container">
+                                    <input type="range" class="percentage-slider" id="electricProgress" 
+                                           min="0" max="100" value="70" 
+                                           oninput="updatePercentage('electric', this.value)">
+                                    <span class="percentage-display" id="electricDisplay">70%</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="table-label" data-fr="Plomberie et Sanitaires" data-ar="السباكة والمرافق الصحية">Plomberie et Sanitaires</td>
+                            <td>
+                                <div class="percentage-container">
+                                    <input type="range" class="percentage-slider" id="plumbingProgress" 
+                                           min="0" max="100" value="45" 
+                                           oninput="updatePercentage('plumbing', this.value)">
+                                    <span class="percentage-display" id="plumbingDisplay">45%</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="table-label" data-fr="Statut du Projet" data-ar="حالة المشروع">Statut du Projet</td>
+                            <td>
+                                <select class="table-select" id="projectStatus">
+                                    <option value="on-schedule" data-fr="En avance sur le calendrier" data-ar="متقدم عن الجدول الزمني">En avance sur le calendrier</option>
+                                    <option value="on-time" selected data-fr="Conforme au calendrier" data-ar="مطابق للجدول الزمني">Conforme au calendrier</option>
+                                    <option value="delayed" data-fr="En retard" data-ar="متأخر">En retard</option>
+                                    <option value="suspended" data-fr="Suspendu temporairement" data-ar="متوقف مؤقتاً">Suspendu temporairement</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="table-label" data-fr="Problèmes Rencontrés" data-ar="المشاكل المواجهة">Problèmes Rencontrés</td>
+                            <td>
+                                <textarea class="table-textarea" id="problemsTextarea"
+                                          placeholder="Décrivez les difficultés, retards ou problèmes techniques rencontrés..."></textarea>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="table-label" data-fr="Prochaines Étapes" data-ar="الخطوات القادمة">Prochaines Étapes</td>
+                            <td>
+                                <textarea class="table-textarea" id="nextStepsTextarea"
+                                          placeholder="Décrivez les travaux prévus pour les prochaines semaines..."></textarea>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="table-label" data-fr="Date d'Achèvement Prévue" data-ar="تاريخ الإنجاز المتوقع">Date d'Achèvement Prévue</td>
+                            <td>
+                                <input type="date" class="table-input" value="2025-09-15">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="table-label" data-fr="Commentaires Additionnels" data-ar="تعليقات إضافية">Commentaires Additionnels</td>
+                            <td>
+                                <textarea class="table-textarea" id="commentsTextarea"
+                                          placeholder="Informations supplémentaires ou demandes spécifiques..."></textarea>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="action-buttons">
+                    <a href="received_letters.html" class="btn btn-secondary" data-fr="← Annuler" data-ar="← إلغاء">
+                        ← Annuler
+                    </a>
+                    <button type="submit" class="btn btn-primary" data-fr="📤 Envoyer la Réponse" data-ar="📤 إرسال الرد">
+                        📤 Envoyer la Réponse
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        // Mise à jour des pourcentages
+        function updatePercentage(type, value) {
+            document.getElementById(`${type}Display`).textContent = `${value}%`;
+            
+            // Mettre à jour la couleur du slider en fonction du pourcentage
+            const slider = document.getElementById(`${type}Progress`);
+            const percentage = (value - slider.min) / (slider.max - slider.min) * 100;
+            slider.style.background = `linear-gradient(to right, var(--primary-red) 0%, var(--primary-red) ${percentage}%, var(--border-gray) ${percentage}%, var(--border-gray) 100%)`;
+        }
+
+        // Initialiser les sliders
+        document.addEventListener('DOMContentLoaded', function() {
+            updatePercentage('global', 65);
+            updatePercentage('structure', 80);
+            updatePercentage('electric', 70);
+            updatePercentage('plumbing', 45);
+        });
+
+        // Language switching functionality with persistence
+        let currentLanguage = localStorage.getItem('selectedLanguage') || 'fr';
+
+        function switchLanguage(lang) {
+            currentLanguage = lang;
+            localStorage.setItem('selectedLanguage', lang);
+            const body = document.body;
+            
+            // Update direction
+            if (lang === 'ar') {
+                body.setAttribute('dir', 'rtl');
+            } else {
+                body.setAttribute('dir', 'ltr');
+            }
+            
+            // Update active flag
+            document.querySelectorAll('.lang-flag').forEach(flag => flag.classList.remove('active'));
+            document.getElementById(lang === 'fr' ? 'frenchBtn' : 'arabicBtn').classList.add('active');
+            
+            // Update all text elements
+            document.querySelectorAll('[data-fr]').forEach(element => {
+                const text = element.getAttribute(`data-${lang}`);
+                if (text) {
+                    element.textContent = text;
+                }
+            });
+            
+            // Update select options
+            updateSelectOptions(lang);
+            
+            // Update textarea placeholders
+            updatePlaceholders(lang);
+        }
+
+        function updateSelectOptions(lang) {
+            const projectStatus = document.getElementById('projectStatus');
+            if (projectStatus) {
+                Array.from(projectStatus.options).forEach(option => {
+                    const text = option.getAttribute(`data-${lang}`);
+                    if (text) {
+                        option.textContent = text;
+                    }
+                });
+            }
+        }
+
+        function updatePlaceholders(lang) {
+            const placeholders = {
+                fr: {
+                    problems: 'Décrivez les difficultés, retards ou problèmes techniques rencontrés...',
+                    nextSteps: 'Décrivez les travaux prévus pour les prochaines semaines...',
+                    comments: 'Informations supplémentaires ou demandes spécifiques...'
+                },
+                ar: {
+                    problems: 'اوصف الصعوبات والتأخير أو المشاكل التقنية التي واجهتها...',
+                    nextSteps: 'اوصف الأعمال المخطط لها في الأسابيع القادمة...',
+                    comments: 'معلومات إضافية أو طلبات محددة...'
+                }
+            };
+            
+            const problemsTextarea = document.getElementById('problemsTextarea');
+            const nextStepsTextarea = document.getElementById('nextStepsTextarea');
+            const commentsTextarea = document.getElementById('commentsTextarea');
+            
+            if (problemsTextarea) problemsTextarea.placeholder = placeholders[lang].problems;
+            if (nextStepsTextarea) nextStepsTextarea.placeholder = placeholders[lang].nextSteps;
+            if (commentsTextarea) commentsTextarea.placeholder = placeholders[lang].comments;
+        }
+
+        // Initialize language on page load
+        function initializeLanguage() {
+            switchLanguage(currentLanguage);
+        }
+
+        // Gestion de soumission du formulaire
+        document.querySelector('form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const successMessage = currentLanguage === 'fr' 
+                ? 'Réponse envoyée avec succès à la Direction Régionale!' 
+                : 'تم إرسال الرد بنجاح إلى المديرية الجهوية!';
+            alert(successMessage);
+            window.location.href = 'received_letters.html';
+        });
+
+        // Initialize language when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeLanguage();
+        });
+    </script>
+</body>
+</html>

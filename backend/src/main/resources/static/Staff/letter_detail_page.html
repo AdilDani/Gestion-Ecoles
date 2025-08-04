@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Détail Lettre - Direction Régionale</title>
+    <style>
+        /* Palette de couleurs pour l'interface administrateur */
+        :root {
+            --admin-primary: #1565C0;
+            --admin-secondary: #0D47A1;
+            --admin-light: #E3F2FD;
+            --primary-red: #C41E3A;
+            --primary-green: #006233;
+            --accent-orange: #FF8C00;
+            --neutral-white: #FFFFFF;
+            --light-gray: #F8F9FA;
+            --medium-gray: #6C757D;
+            --dark-gray: #343A40;
+            --border-gray: #DEE2E6;
+            --success-green: #28A745;
+            --warning-orange: #FD7E14;
+            --danger-red: #DC3545;
+            
+            --shadow-light: 0 2px 4px rgba(0,0,0,0.1);
+            --shadow-medium: 0 4px 8px rgba(0,0,0,0.15);
+            --shadow-heavy: 0 8px 16px rgba(0,0,0,0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-gray);
+            color: var(--dark-gray);
+            line-height: 1.6;
+            direction: ltr;
+            transition: direction 0.3s ease;
+        }
+
+        /* RTL Support */
+        body[dir="rtl"] {
+            direction: rtl;
+            font-family: 'Arial', 'Tahoma', sans-serif;
+        }
+
+        /* Language Toggle */
+        .language-toggle {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-left: auto;
+        }
+
+        body[dir="rtl"] .language-toggle {
+            margin-left: 0;
+            margin-right: auto;
+        }
+
+        .lang-flag {
+            font-size: 1.2rem;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .lang-flag:hover {
+            opacity: 0.8;
+            transform: scale(1.1);
+        }
+
+        .lang-flag.active {
+            opacity: 1;
+            transform: scale(1.2);
+        }
+
+        /* Header administrateur */
+        .admin-header {
+            background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-secondary) 100%);
+            color: var(--neutral-white);
+            padding: 1rem 0;
+            box-shadow: var(--shadow-medium);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .admin-logo {
+            width: 50px;
+            height: 50px;
+            background: var(--neutral-white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--admin-primary);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .header-text {
+            flex: 1;
+        }
+
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .header-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .admin-nav {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-link {
+            color: var(--neutral-white);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: background-color 0.3s ease;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Navigation breadcrumb */
+        .breadcrumb {
+            background: var(--neutral-white);
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-gray);
+        }
+
+        .breadcrumb-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .breadcrumb a {
+            color: var(--admin-primary);
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .breadcrumb-separator {
+            color: var(--medium-gray);
+        }
+
+        /* Container principal */
+        .main-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        /* Bouton retour */
+        .back-button {
+            background: var(--neutral-white);
+            color: var(--admin-primary);
+            padding: 0.75rem 1.5rem;
+            border: 2px solid var(--admin-primary);
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: var(--admin-primary);
+            color: var(--neutral-white);
+        }
+
+        /* Informations de la lettre */
+        .letter-info-card {
+            background: var(--neutral-white);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: var(--shadow-medium);
+            margin-bottom: 2rem;
+            border-left: 4px solid var(--admin-primary);
+        }
+
+        .letter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+        }
+
+        .letter-type {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .letter-type.project {
+            background: var(--primary-red);
+            color: var(--neutral-white);
+        }
+
+        .letter-type.specific {
+            background: var(--success-green);
+            color: var(--neutral-white);
+        }
+
+        .letter-title {
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: var(--dark-gray);
+            margin-bottom: 0.5rem;
+        }
+
+        .letter-meta {
+            color: var(--medium-gray);
+            font-size: 1rem;
+        }
+
+        .response-summary {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .summary-stat {
+            text-align: center;
+        }
+
+        .summary-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--admin-primary);
+        }
+
+        .summary-label {
+            color: var(--medium-gray);
+            font-size: 0.9rem;
+        }
+
+        /* Onglets */
+        .tabs-container {
+            background: var(--neutral-white);
+            border-radius: 12px;
+            box-shadow: var(--shadow-medium);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .tabs-header {
+            display: flex;
+            background: var(--light-gray);
+            border-bottom: 1px solid var(--border-gray);
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 1rem 2rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--medium-gray);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .tab-button.active {
+            color: var(--admin-primary);
+            background: var(--neutral-white);
+        }
+
+        .tab-button.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--admin-primary);
+        }
+
+        .tab-content {
+            padding: 2rem;
+        }
+
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        /* Actions de sélection */
+        .selection-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: var(--light-gray);
+            border-radius: 8px;
+        }
+
+        .selection-info {
+            font-weight: 600;
+            color: var(--admin-primary);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-select {
+            background: var(--admin-light);
+            color: var(--admin-primary);
+            border: 2px solid var(--admin-primary);
+        }
+
+        .btn-select:hover {
+            background: var(--admin-primary);
+            color: var(--neutral-white);
+        }
+
+        .btn-export {
+            background: var(--success-green);
+            color: var(--neutral-white);
+        }
+
+        .btn-export:hover {
+            background: #1E7E34;
+        }
+
+        .btn-export:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-sms {
+            background: var(--warning-orange);
+            color: var(--neutral-white);
+        }
+
+        .btn-sms:hover {
+            background: #E67E00;
+        }
+
+        .btn-sms:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Liste des écoles */
+        .schools-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .school-item {
+            background: var(--light-gray);
+            border: 2px solid transparent;
+            border-radius: 8px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .school-item:hover {
+            background: var(--neutral-white);
+            box-shadow: var(--shadow-light);
+        }
+
+        .school-item.selected {
+            border-color: var(--admin-primary);
+            background: var(--admin-light);
+        }
+
+        .school-item.responded {
+            border-left: 4px solid var(--success-green);
+        }
+
+        .school-item.pending {
+            border-left: 4px solid var(--warning-orange);
+        }
+
+        .school-checkbox {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 18px;
+            height: 18px;
+        }
+
+        .school-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .school-info {
+            flex: 1;
+            margin-right: 2rem;
+        }
+
+        .school-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--dark-gray);
+            margin-bottom: 0.25rem;
+        }
+
+        .school-director {
+            color: var(--medium-gray);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .school-contact {
+            color: var(--medium-gray);
+            font-size: 0.85rem;
+        }
+
+        .response-info {
+            text-align: right;
+        }
+
+        .response-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .response-status.responded {
+            background: var(--success-green);
+            color: var(--neutral-white);
+        }
+
+        .response-status.pending {
+            background: var(--warning-orange);
+            color: var(--neutral-white);
+        }
+
+        .response-date {
+            color: var(--medium-gray);
+            font-size: 0.8rem;
+        }
+
+        .response-content {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--neutral-white);
+            border-radius: 6px;
+            border-left: 3px solid var(--success-green);
+        }
+
+        .response-text {
+            color: var(--dark-gray);
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        /* Modal pour export */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--neutral-white);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--dark-gray);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--medium-gray);
+        }
+
+        .export-options {
+            display: grid;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .export-option {
+            padding: 1rem;
+            border: 2px solid var(--border-gray);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .export-option:hover,
+        .export-option.selected {
+            border-color: var(--admin-primary);
+            background: var(--admin-light);
+        }
+
+        .export-title {
+            font-weight: 600;
+            color: var(--dark-gray);
+            margin-bottom: 0.25rem;
+        }
+
+        .export-desc {
+            font-size: 0.9rem;
+            color: var(--medium-gray);
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .header-content,
+            .breadcrumb-content {
+                padding: 0 1rem;
+            }
+            
+            .main-container {
+                padding: 0 1rem;
+            }
+            
+            .letter-header,
+            .response-summary {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .tabs-header {
+                flex-direction: column;
+            }
+            
+            .selection-actions {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .action-buttons {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .school-header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .response-info {
+                text-align: left;
+            }
+        }
+
+        /* Animation */
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header administrateur -->
+    <header class="admin-header">
+        <div class="header-content">
+            <div class="admin-logo">⚙️</div>
+            <div class="header-text">
+                <h1 class="header-title" data-fr="Interface Administrateur - Direction Régionale" data-ar="واجهة الإدارة - المديرية الجهوية">Interface Administrateur - Direction Régionale</h1>
+                <p class="header-subtitle" data-fr="Gestion des Établissements et Communication" data-ar="إدارة المؤسسات والتواصل">Gestion des Établissements et Communication</p>
+            </div>
+            <nav class="admin-nav">
+                <a href="admin_school_dashboard.html" class="nav-link" data-fr="Écoles" data-ar="المدارس">Écoles</a>
+                <a href="letter_management_page.html" class="nav-link active" data-fr="Lettres" data-ar="الرسائل">Lettres</a>
+                <a href="#" class="nav-link" data-fr="Statistiques" data-ar="الإحصائيات">Statistiques</a>
+            </nav>
+            <div class="language-toggle">
+                <span class="lang-flag active" id="frenchBtn" onclick="switchLanguage('fr')">🇫🇷</span>
+                <span class="lang-flag" id="arabicBtn" onclick="switchLanguage('ar')">🇲🇦</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Breadcrumb navigation -->
+    <nav class="breadcrumb">
+        <div class="breadcrumb-content">
+            <a href="admin_school_dashboard.html" data-fr="Écoles" data-ar="المدارس">Écoles</a>
+            <span class="breadcrumb-separator">›</span>
+            <a href="letter_management_page.html" data-fr="Lettres" data-ar="الرسائل">Lettres</a>
+            <span class="breadcrumb-separator">›</span>
+            <span data-fr="Détail de la lettre" data-ar="تفاصيل الرسالة">Détail de la lettre</span>
+        </div>
+    </nav>
+
+    <!-- Contenu principal -->
+    <main class="main-container">
+        <!-- Bouton retour -->
+        <a href="letter_management_page.html" class="back-button fade-in" data-fr="← Retour aux lettres" data-ar="← العودة إلى الرسائل">
+            ← Retour aux lettres
+        </a>
+
+        <!-- Informations de la lettre -->
+        <div class="letter-info-card fade-in">
+            <div class="letter-header">
+                <div>
+                    <span class="letter-type project" data-fr="📊 Rapport de Projet" data-ar="📊 تقرير المشروع">📊 Rapport de Projet</span>
+                    <h1 class="letter-title" data-fr="Mise à jour Projets - Juillet 2025" data-ar="تحديث المشاريع - يوليو 2025">Mise à jour Projets - Juillet 2025</h1>
+                    <p class="letter-meta" data-fr="Envoyé le 25 Juillet 2025 à 14:30" data-ar="أرسل في 25 يوليو 2025 في 14:30">Envoyé le 25 Juillet 2025 à 14:30</p>
+                </div>
+                
+                <div class="response-summary">
+                    <div class="summary-stat">
+                        <div class="summary-number">5</div>
+                        <div class="summary-label" data-fr="Réponses" data-ar="ردود">Réponses</div>
+                    </div>
+                    <div class="summary-stat">
+                        <div class="summary-number">3</div>
+                        <div class="summary-label" data-fr="En attente" data-ar="في الانتظار">En attente</div>
+                    </div>
+                    <div class="summary-stat">
+                        <div class="summary-number">8</div>
+                        <div class="summary-label" data-fr="Total écoles" data-ar="إجمالي المدارس">Total écoles</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Onglets de gestion -->
+        <div class="tabs-container fade-in">
+            <div class="tabs-header">
+                <button class="tab-button active" onclick="switchTab('all')" data-fr="Toutes (8)" data-ar="جميع (8)">
+                    Toutes (8)
+                </button>
+                <button class="tab-button" onclick="switchTab('responded')" data-fr="Ont répondu (5)" data-ar="ردوا (5)">
+                    Ont répondu (5)
+                </button>
+                <button class="tab-button" onclick="switchTab('pending')" data-fr="En attente (3)" data-ar="في الانتظار (3)">
+                    En attente (3)
+                </button>
+            </div>
+
+            <div class="tab-content">
+                <!-- Onglet Toutes -->
+                <div class="tab-panel active" id="tab-all">
+                    <div class="selection-actions">
+                        <div class="selection-info">
+                            <span id="selectedAllCount">0</span> <span data-fr="école(s) sélectionnée(s)" data-ar="مدرسة مختارة">école(s) sélectionnée(s)</span>
+                        </div>
+                        <div class="action-buttons">
+                            <button class="btn btn-select" onclick="selectAllVisible('all')" data-fr="✓ Sélectionner tout" data-ar="✓ تحديد الكل">
+                                ✓ Sélectionner tout
+                            </button>
+                            <button class="btn btn-select" onclick="clearSelection('all')" data-fr="✗ Désélectionner" data-ar="✗ إلغاء التحديد">
+                                ✗ Désélectionner
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="schools-list" id="schools-all">
+                        <!-- Toutes les écoles sélectionnées apparaîtront ici -->
+                        <div class="empty-state">
+                            <div class="empty-icon">🏫</div>
+                            <div class="empty-title" data-fr="Aucune école sélectionnée" data-ar="لا توجد مدارس محددة">Aucune école sélectionnée</div>
+                            <div class="empty-description" data-fr="Sélectionnez des écoles depuis le tableau de bord pour envoyer une lettre." data-ar="اختر المدارس من لوحة التحكم لإرسال رسالة.">
+                                Sélectionnez des écoles depuis le tableau de bord pour envoyer une lettre.
+                            </div>
+                        </div>
+                    </div>
+                        <!-- Fin de la section d'exemple d'écoles -->
+                    </div>
+                </div>
+
+                <!-- Onglet Ont répondu -->
+                <div class="tab-panel" id="tab-responded">
+                    <div class="selection-actions">
+                        <div class="selection-info">
+                            <span id="selectedRespondedCount">0</span> <span data-fr="école(s) sélectionnée(s)" data-ar="مدرسة مختارة">école(s) sélectionnée(s)</span>
+                        </div>
+                        <div class="action-buttons">
+                            <button class="btn btn-select" onclick="selectAllVisible('responded')" data-fr="✓ Sélectionner tout" data-ar="✓ تحديد الكل">
+                                ✓ Sélectionner tout
+                            </button>
+                            <button class="btn btn-select" onclick="clearSelection('responded')" data-fr="✗ Désélectionner" data-ar="✗ إلغاء التحديد">
+                                ✗ Désélectionner
+                            </button>
+                            <button class="btn btn-export" id="exportBtn" onclick="openExportModal()" disabled data-fr="📤 Exporter" data-ar="📤 تصدير">
+                                📤 Exporter
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="schools-list" id="schools-responded">
+                        <!-- Les écoles qui ont répondu apparaîtront ici -->
+                        <div class="empty-state">
+                            <div class="empty-icon">✅</div>
+                            <div class="empty-title" data-fr="Aucune réponse reçue" data-ar="لم يتم تلقي أي رد">Aucune réponse reçue</div>
+                            <div class="empty-description" data-fr="Les écoles qui ont répondu à la demande apparaîtront ici." data-ar="ستظهر هنا المدارس التي ردت على الطلب.">
+                                Les écoles qui ont répondu à la demande apparaîtront ici.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Onglet En attente -->
+                <div class="tab-panel" id="tab-pending">
+                    <div class="selection-actions">
+                        <div class="selection-info">
+                            <span id="selectedPendingCount">0</span> <span data-fr="école(s) sélectionnée(s)" data-ar="مدرسة مختارة">école(s) sélectionnée(s)</span>
+                        </div>
+                        <div class="action-buttons">
+                            <button class="btn btn-select" onclick="selectAllVisible('pending')" data-fr="✓ Sélectionner tout" data-ar="✓ تحديد الكل">
+                                ✓ Sélectionner tout
+                            </button>
+                            <button class="btn btn-select" onclick="clearSelection('pending')" data-fr="✗ Désélectionner" data-ar="✗ إلغاء التحديد">
+                                ✗ Désélectionner
+                            </button>
+                            <button class="btn btn-sms" id="smsBtn" onclick="sendSMSReminder()" disabled data-fr="📱 Envoyer SMS" data-ar="📱 إرسال رسالة">
+                                📱 Envoyer SMS
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="schools-list" id="schools-pending">
+                        <!-- Les écoles en attente de réponse apparaîtront ici -->
+                        <div class="empty-state">
+                            <div class="empty-icon">⏳</div>
+                            <div class="empty-title" data-fr="Aucune école en attente" data-ar="لا توجد مدارس في الانتظار">Aucune école en attente</div>
+                            <div class="empty-description" data-fr="Les écoles qui n'ont pas encore répondu apparaîtront ici." data-ar="ستظهر هنا المدارس التي لم ترد بعد.">
+                                Les écoles qui n'ont pas encore répondu apparaîtront ici.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal d'export -->
+    <div class="modal" id="exportModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" data-fr="Exporter les Données" data-ar="تصدير البيانات">Exporter les Données</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+
+            <div class="export-options">
+                <div class="export-option" onclick="exportData('word')">
+                    <div class="export-title" data-fr="📄 Word" data-ar="📄 وورد">📄 Word</div>
+                    <div class="export-desc" data-fr="Tableau formaté pour Word" data-ar="جدول منسق للوورد">Tableau formaté pour Word</div>
+                </div>
+
+                <div class="export-option" onclick="exportData('excel')">
+                    <div class="export-title" data-fr="📊 Excel" data-ar="📊 إكسل">📊 Excel</div>
+                    <div class="export-desc" data-fr="Feuille de calcul Excel" data-ar="ورقة حساب إكسل">Feuille de calcul Excel</div>
+                </div>
+
+                <div class="export-option" onclick="exportData('clipboard')">
+                    <div class="export-title" data-fr="📋 Presse-papiers" data-ar="📋 لوحة القص">📋 Presse-papiers</div>
+                    <div class="export-desc" data-fr="Copier vers le presse-papiers" data-ar="نسخ إلى لوحة القص">Copier vers le presse-papiers</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentTab = 'all';
+        let selectedSchools = {
+            all: new Set(),
+            responded: new Set(),
+            pending: new Set()
+        };
+
+        // Language switching functionality with persistence
+        let currentLanguage = localStorage.getItem('selectedLanguage') || 'fr';
+
+        function switchLanguage(lang) {
+            currentLanguage = lang;
+            localStorage.setItem('selectedLanguage', lang);
+            const body = document.body;
+            
+            // Update direction
+            if (lang === 'ar') {
+                body.setAttribute('dir', 'rtl');
+            } else {
+                body.setAttribute('dir', 'ltr');
+            }
+            
+            // Update active flag
+            document.querySelectorAll('.lang-flag').forEach(flag => flag.classList.remove('active'));
+            document.getElementById(lang === 'fr' ? 'frenchBtn' : 'arabicBtn').classList.add('active');
+            
+            // Update all text elements
+            document.querySelectorAll('[data-fr]').forEach(element => {
+                const text = element.getAttribute(`data-${lang}`);
+                if (text) {
+                    element.textContent = text;
+                }
+            });
+        }
+
+        // Initialize language on page load
+        function initializeLanguage() {
+            switchLanguage(currentLanguage);
+        }
+
+        // Gestion des onglets
+        function switchTab(tabName) {
+            // Désactiver l'onglet actuel
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+
+            // Activer le nouvel onglet
+            event.target.classList.add('active');
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            
+            currentTab = tabName;
+            updateSelection(tabName);
+        }
+
+        // Gestion de la sélection
+        function updateSelection(tabName) {
+            const checkboxes = document.querySelectorAll(`#tab-${tabName} .school-checkbox`);
+            selectedSchools[tabName].clear();
+            
+            checkboxes.forEach(checkbox => {
+                const schoolItem = checkbox.closest('.school-item');
+                if (checkbox.checked) {
+                    selectedSchools[tabName].add(schoolItem.dataset.schoolId);
+                    schoolItem.classList.add('selected');
+                } else {
+                    schoolItem.classList.remove('selected');
+                }
+            });
+
+            // Mettre à jour les compteurs
+            const countElement = document.getElementById(`selected${tabName.charAt(0).toUpperCase() + tabName.slice(1)}Count`);
+            if (countElement) {
+                countElement.textContent = selectedSchools[tabName].size;
+            }
+
+            // Activer/désactiver les boutons
+            if (tabName === 'responded') {
+                document.getElementById('exportBtn').disabled = selectedSchools[tabName].size === 0;
+            } else if (tabName === 'pending') {
+                document.getElementById('smsBtn').disabled = selectedSchools[tabName].size === 0;
+            }
+        }
+
+        function selectAllVisible(tabName) {
+            const checkboxes = document.querySelectorAll(`#tab-${tabName} .school-checkbox`);
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = true;
+            });
+            updateSelection(tabName);
+        }
+
+        function clearSelection(tabName) {
+            const checkboxes = document.querySelectorAll(`#tab-${tabName} .school-checkbox`);
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            updateSelection(tabName);
+        }
+
+        // Fonctions d'action
+        function openExportModal() {
+            document.getElementById('exportModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('exportModal').classList.remove('active');
+        }
+
+        function exportData(format) {
+            const selectedCount = selectedSchools.responded.size;
+            const message = currentLanguage === 'ar' ? 
+                `تم إنشاء تصدير ${format.toUpperCase()} لح ${selectedCount} رد بنجاح!` :
+                `Export ${format.toUpperCase()} de ${selectedCount} réponse(s) généré avec succès!`;
+            alert(message);
+            closeModal();
+        }
+
+        function sendSMSReminder() {
+            const selectedCount = selectedSchools.pending.size;
+            const message = currentLanguage === 'ar' ? 
+                `تم إرسال رسالة تذكير إلى ${selectedCount} مدرسة!` :
+                `SMS de rappel envoyé à ${selectedCount} école(s)!`;
+            alert(message);
+            clearSelection('pending');
+        }
+
+        // Fermer les modals en cliquant à l'extérieur
+        window.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal')) {
+                e.target.classList.remove('active');
+            }
+        });
+
+        // Initialize language when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeLanguage();
+        });
+        
+        // Initialiser les sélections
+        updateSelection('all');
+    </script>
+</body>
+</html>

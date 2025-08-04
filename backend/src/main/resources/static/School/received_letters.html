@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lettres Reçues - Direction Régionale</title>
+    <style>
+        /* Palette de couleurs du gouvernement marocain */
+        :root {
+            --primary-red: #C41E3A;
+            --primary-green: #006233;
+            --light-green: #228B22;
+            --accent-orange: #FF8C00;
+            --neutral-white: #FFFFFF;
+            --light-gray: #F8F9FA;
+            --medium-gray: #6C757D;
+            --dark-gray: #343A40;
+            --border-gray: #DEE2E6;
+            --success-green: #28A745;
+            --warning-orange: #FD7E14;
+            --danger-red: #DC3545;
+            
+            --shadow-light: 0 2px 4px rgba(0,0,0,0.1);
+            --shadow-medium: 0 4px 8px rgba(0,0,0,0.15);
+            --shadow-heavy: 0 8px 16px rgba(0,0,0,0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-gray);
+            color: var(--dark-gray);
+            line-height: 1.6;
+            direction: ltr;
+            transition: direction 0.3s ease;
+        }
+
+        /* RTL Support */
+        body[dir="rtl"] {
+            direction: rtl;
+            font-family: 'Arial', 'Tahoma', sans-serif;
+        }
+
+        /* Language Toggle */
+        .language-toggle {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-left: auto;
+        }
+
+        body[dir="rtl"] .language-toggle {
+            margin-left: 0;
+            margin-right: auto;
+        }
+
+        .lang-flag {
+            font-size: 1.2rem;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .lang-flag:hover {
+            opacity: 0.8;
+            transform: scale(1.1);
+        }
+
+        .lang-flag.active {
+            opacity: 1;
+            transform: scale(1.2);
+        }
+
+        /* Header gouvernemental */
+        .header {
+            background: linear-gradient(135deg, var(--primary-red) 0%, #B71C1C 100%);
+            color: var(--neutral-white);
+            padding: 1rem 0;
+            box-shadow: var(--shadow-medium);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .gov-logo {
+            width: 50px;
+            height: 50px;
+            background: var(--neutral-white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-red);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .header-text {
+            flex: 1;
+        }
+
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .header-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        /* Navigation breadcrumb */
+        .breadcrumb {
+            background: var(--neutral-white);
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-gray);
+        }
+
+        .breadcrumb-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .breadcrumb a {
+            color: var(--primary-green);
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .breadcrumb-separator {
+            color: var(--medium-gray);
+        }
+
+        /* Container principal */
+        .main-container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        /* Bouton retour */
+        .back-button {
+            background: var(--neutral-white);
+            color: var(--primary-red);
+            padding: 0.75rem 1.5rem;
+            border: 2px solid var(--primary-red);
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: var(--primary-red);
+            color: var(--neutral-white);
+        }
+
+        /* Page title */
+        .page-header {
+            background: var(--neutral-white);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow-medium);
+            margin-bottom: 2rem;
+            border-left: 4px solid var(--primary-red);
+        }
+
+        .page-title {
+            color: var(--primary-red);
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-description {
+            color: var(--medium-gray);
+            font-size: 1.1rem;
+        }
+
+        /* Onglets */
+        .tabs-container {
+            background: var(--neutral-white);
+            border-radius: 12px;
+            box-shadow: var(--shadow-medium);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .tabs-header {
+            display: flex;
+            background: var(--light-gray);
+            border-bottom: 1px solid var(--border-gray);
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 1rem 2rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--medium-gray);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .tab-button.active {
+            color: var(--primary-red);
+            background: var(--neutral-white);
+        }
+
+        .tab-button.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary-red);
+        }
+
+        .tab-content {
+            padding: 2rem;
+        }
+
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        /* Liste des lettres */
+        .letters-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .letter-item {
+            background: var(--light-gray);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .letter-item:hover {
+            background: var(--neutral-white);
+            box-shadow: var(--shadow-light);
+            transform: translateY(-2px);
+        }
+
+        .letter-item.pending {
+            border-left: 4px solid var(--warning-orange);
+        }
+
+        .letter-item.responded {
+            border-left: 4px solid var(--success-green);
+        }
+
+        .letter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .letter-info {
+            flex: 1;
+        }
+
+        .letter-type {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .letter-type.project {
+            background: var(--primary-red);
+            color: var(--neutral-white);
+        }
+
+        .letter-type.specific {
+            background: var(--success-green);
+            color: var(--neutral-white);
+        }
+
+        .letter-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--dark-gray);
+            margin-bottom: 0.25rem;
+        }
+
+        .letter-date {
+            color: var(--medium-gray);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .letter-description {
+            color: var(--medium-gray);
+            font-size: 0.9rem;
+        }
+
+        .letter-status {
+            text-align: right;
+        }
+
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: inline-block;
+        }
+
+        .status-badge.pending {
+            background: var(--warning-orange);
+            color: var(--neutral-white);
+        }
+
+        .status-badge.responded {
+            background: var(--success-green);
+            color: var(--neutral-white);
+        }
+
+        .deadline {
+            color: var(--danger-red);
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .response-date {
+            color: var(--medium-gray);
+            font-size: 0.8rem;
+        }
+
+        .chevron {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--medium-gray);
+            font-size: 1.2rem;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--medium-gray);
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .header-content,
+            .breadcrumb-content {
+                padding: 0 1rem;
+            }
+            
+            .main-container {
+                padding: 0 1rem;
+            }
+            
+            .page-header,
+            .tabs-container {
+                padding: 1.5rem;
+            }
+            
+            .tabs-header {
+                flex-direction: column;
+            }
+            
+            .letter-header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .letter-status {
+                text-align: left;
+            }
+        }
+
+        /* Animation */
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header gouvernemental -->
+    <header class="header">
+        <div class="header-content">
+            <div class="gov-logo">🏛️</div>
+            <div class="header-text">
+                <h1 class="header-title" data-fr="Direction Régionale de l'Éducation" data-ar="المديرية الجهوية للتربية والتعليم">Direction Régionale de l'Éducation</h1>
+                <p class="header-subtitle" data-fr="Suivi des Projets et État des Établissements Scolaires" data-ar="متابعة المشاريع وحالة المؤسسات التعليمية">Suivi des Projets et État des Établissements Scolaires</p>
+            </div>
+            <div class="language-toggle">
+                <span class="lang-flag active" id="frenchBtn" onclick="switchLanguage('fr')">🇫🇷</span>
+                <span class="lang-flag" id="arabicBtn" onclick="switchLanguage('ar')">🇲🇦</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Breadcrumb navigation -->
+    <nav class="breadcrumb">
+        <div class="breadcrumb-content">
+            <a href="acceuil.html" data-fr="Accueil" data-ar="الرئيسية">Accueil</a>
+            <span class="breadcrumb-separator">›</span>
+            <span data-fr="Lettres Reçues" data-ar="الرسائل المستلمة">Lettres Reçues</span>
+        </div>
+    </nav>
+
+    <!-- Contenu principal -->
+    <main class="main-container">
+        <!-- Bouton retour -->
+        <a href="acceuil.html" class="back-button fade-in" data-fr="← Retour à l'accueil" data-ar="← العودة للرئيسية">
+            ← Retour à l'accueil
+        </a>
+
+        <!-- En-tête de page -->
+        <div class="page-header fade-in">
+            <h2 class="page-title" data-fr="📧 Lettres Reçues" data-ar="📧 الرسائل المستلمة">📧 Lettres Reçues</h2>
+            <p class="page-description" data-fr="Consultez les demandes reçues de la Direction Régionale et répondez aux messages en attente." data-ar="اطلع على الطلبات المستلمة من المديرية الجهوية ورد على الرسائل في الانتظار.">
+                Consultez les demandes reçues de la Direction Régionale et répondez aux messages en attente.
+            </p>
+        </div>
+
+        <!-- Onglets des lettres -->
+        <div class="tabs-container fade-in">
+            <div class="tabs-header">
+                <button class="tab-button active" onclick="switchTab('pending')" data-fr="⏳ Messages en Attente (0)" data-ar="⏳ الرسائل في الانتظار (0)">
+                    ⏳ Messages en Attente (0)
+                </button>
+                <button class="tab-button" onclick="switchTab('responded')" data-fr="✅ Messages Traités (0)" data-ar="✅ الرسائل المعالجة (0)">
+                    ✅ Messages Traités (0)
+                </button>
+            </div>
+
+            <div class="tab-content">
+                <!-- Onglet Messages en Attente -->
+                <div class="tab-panel active" id="tab-pending">
+                    <div class="letters-list">
+                        <!-- Les lettres en attente de réponse apparaîtront ici -->
+                        <div class="empty-state">
+                            <div class="empty-icon">📭</div>
+                            <div class="empty-title" data-fr="Aucune lettre en attente" data-ar="لا توجد رسائل في الانتظار">Aucune lettre en attente</div>
+                            <div class="empty-description" data-fr="Les demandes de la Direction Régionale nécessitant une réponse apparaîtront ici." data-ar="ستظهر هنا طلبات المديرية الجهوية التي تحتاج إلى رد.">
+                                Les demandes de la Direction Régionale nécessitant une réponse apparaîtront ici.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Onglet Messages Traités -->
+                <div class="tab-panel" id="tab-responded">
+                    <div class="letters-list">
+                        <!-- Les lettres déjà traitées apparaîtront ici -->
+                        <div class="empty-state">
+                            <div class="empty-icon">✅</div>
+                            <div class="empty-title" data-fr="Aucune réponse envoyée" data-ar="لم يتم إرسال أي رد">Aucune réponse envoyée</div>
+                            <div class="empty-description" data-fr="L'historique de vos réponses aux demandes apparaîtra ici." data-ar="سيظهر هنا تاريخ ردودك على الطلبات.">
+                                L'historique de vos réponses aux demandes apparaîtra ici.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Language switching functionality with persistence
+        let currentLanguage = localStorage.getItem('selectedLanguage') || 'fr';
+
+        function switchLanguage(lang) {
+            currentLanguage = lang;
+            localStorage.setItem('selectedLanguage', lang);
+            const body = document.body;
+            
+            // Update direction
+            if (lang === 'ar') {
+                body.setAttribute('dir', 'rtl');
+            } else {
+                body.setAttribute('dir', 'ltr');
+            }
+            
+            // Update active flag
+            document.querySelectorAll('.lang-flag').forEach(flag => flag.classList.remove('active'));
+            document.getElementById(lang === 'fr' ? 'frenchBtn' : 'arabicBtn').classList.add('active');
+            
+            // Update all text elements
+            document.querySelectorAll('[data-fr]').forEach(element => {
+                const text = element.getAttribute(`data-${lang}`);
+                if (text) {
+                    element.textContent = text;
+                }
+            });
+        }
+
+        // Initialize language on page load
+        function initializeLanguage() {
+            switchLanguage(currentLanguage);
+        }
+
+        // Gestion des onglets
+        function switchTab(tabName) {
+            // Désactiver l'onglet actuel
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+
+            // Activer le nouvel onglet
+            event.target.classList.add('active');
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+        }
+
+        // Répondre à une lettre
+        function respondToLetter(letterId) {
+            window.location.href = `respond_letter.html?id=${letterId}`;
+        }
+
+        // Animation d'entrée progressive
+        const items = document.querySelectorAll('.letter-item');
+        items.forEach((item, index) => {
+            item.style.animationDelay = `${index * 0.1}s`;
+            item.classList.add('fade-in');
+        });
+
+        // Initialize language when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeLanguage();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mise à Jour Générale - Direction Régionale</title>
+    <style>
+        /* Palette de couleurs du gouvernement marocain */
+        :root {
+            --primary-red: #C41E3A;
+            --primary-green: #006233;
+            --light-green: #228B22;
+            --accent-orange: #FF8C00;
+            --neutral-white: #FFFFFF;
+            --light-gray: #F8F9FA;
+            --medium-gray: #6C757D;
+            --dark-gray: #343A40;
+            --border-gray: #DEE2E6;
+            --success-green: #28A745;
+            --warning-orange: #FD7E14;
+            --danger-red: #DC3545;
+            
+            --shadow-light: 0 2px 4px rgba(0,0,0,0.1);
+            --shadow-medium: 0 4px 8px rgba(0,0,0,0.15);
+            --shadow-heavy: 0 8px 16px rgba(0,0,0,0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-gray);
+            color: var(--dark-gray);
+            line-height: 1.6;
+            direction: ltr;
+            transition: direction 0.3s ease;
+        }
+
+        /* RTL Support */
+        body[dir="rtl"] {
+            direction: rtl;
+            font-family: 'Arial', 'Tahoma', sans-serif;
+        }
+
+        /* Language Toggle */
+        .language-toggle {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-left: auto;
+        }
+
+        body[dir="rtl"] .language-toggle {
+            margin-left: 0;
+            margin-right: auto;
+        }
+
+        .lang-flag {
+            font-size: 1.2rem;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .lang-flag:hover {
+            opacity: 0.8;
+            transform: scale(1.1);
+        }
+
+        .lang-flag.active {
+            opacity: 1;
+            transform: scale(1.2);
+        }
+
+        /* Header gouvernemental */
+        .header {
+            background: linear-gradient(135deg, var(--primary-green) 0%, #004D40 100%);
+            color: var(--neutral-white);
+            padding: 1rem 0;
+            box-shadow: var(--shadow-medium);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .gov-logo {
+            width: 50px;
+            height: 50px;
+            background: var(--neutral-white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-green);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .header-text {
+            flex: 1;
+        }
+
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .header-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        /* Navigation breadcrumb */
+        .breadcrumb {
+            background: var(--neutral-white);
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-gray);
+        }
+
+        .breadcrumb-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .breadcrumb a {
+            color: var(--primary-green);
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .breadcrumb-separator {
+            color: var(--medium-gray);
+        }
+
+        /* Container principal */
+        .main-container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        /* Bouton retour */
+        .back-button {
+            background: var(--neutral-white);
+            color: var(--primary-green);
+            padding: 0.75rem 1.5rem;
+            border: 2px solid var(--primary-green);
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: var(--primary-green);
+            color: var(--neutral-white);
+        }
+
+        /* Carte d'information */
+        .info-card {
+            background: var(--neutral-white);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: var(--shadow-medium);
+            border-left: 4px solid var(--primary-green);
+            margin-bottom: 2rem;
+        }
+
+        .info-title {
+            color: var(--primary-green);
+            font-size: 1.6rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .info-description {
+            color: var(--medium-gray);
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .school-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .info-item {
+            background: var(--light-gray);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-gray);
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: var(--primary-green);
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .info-value {
+            color: var(--dark-gray);
+            font-size: 1rem;
+        }
+
+        /* Formulaire de rapport */
+        .report-form {
+            background: var(--neutral-white);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: var(--shadow-medium);
+            margin-bottom: 2rem;
+        }
+
+        .form-title {
+            color: var(--dark-gray);
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-section {
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-gray);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: var(--light-gray);
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-gray);
+            font-weight: 600;
+            color: var(--dark-gray);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-content {
+            padding: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: var(--dark-gray);
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .form-textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 1rem;
+            border: 2px solid var(--border-gray);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 1rem;
+            line-height: 1.5;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary-green);
+            box-shadow: 0 0 0 3px rgba(0, 98, 51, 0.1);
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border-gray);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 1rem;
+            background: var(--neutral-white);
+            transition: border-color 0.3s ease;
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: var(--primary-green);
+            box-shadow: 0 0 0 3px rgba(0, 98, 51, 0.1);
+        }
+
+        .priority-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .priority-option {
+            padding: 0.75rem;
+            border: 2px solid var(--border-gray);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .priority-option.low {
+            border-color: var(--success-green);
+            color: var(--success-green);
+        }
+
+        .priority-option.medium {
+            border-color: var(--warning-orange);
+            color: var(--warning-orange);
+        }
+
+        .priority-option.high {
+            border-color: var(--accent-orange);
+            color: var(--accent-orange);
+        }
+
+        .priority-option.urgent {
+            border-color: var(--danger-red);
+            color: var(--danger-red);
+        }
+
+        .priority-option:hover,
+        .priority-option.selected {
+            background-color: currentColor;
+            color: var(--neutral-white);
+        }
+
+        /* Boutons d'action */
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-green) 0%, #004D40 100%);
+            color: var(--neutral-white);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-heavy);
+        }
+
+        .btn-secondary {
+            background: var(--neutral-white);
+            color: var(--medium-gray);
+            border: 2px solid var(--border-gray);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary-green);
+            color: var(--primary-green);
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .header-content,
+            .breadcrumb-content {
+                padding: 0 1rem;
+            }
+            
+            .main-container {
+                padding: 0 1rem;
+            }
+            
+            .info-card,
+            .report-form {
+                padding: 1.5rem;
+            }
+            
+            .school-info {
+                grid-template-columns: 1fr;
+            }
+            
+            .priority-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                text-align: center;
+                justify-content: center;
+            }
+        }
+
+        /* Animation */
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header gouvernemental -->
+    <header class="header">
+        <div class="header-content">
+            <div class="gov-logo">🏛️</div>
+            <div class="header-text">
+                <h1 class="header-title" data-fr="Direction Régionale de l'Éducation" data-ar="المديرية الجهوية للتربية والتعليم">Direction Régionale de l'Éducation</h1>
+                <p class="header-subtitle" data-fr="Suivi des Projets et État des Établissements Scolaires" data-ar="متابعة المشاريع وحالة المؤسسات التعليمية">Suivi des Projets et État des Établissements Scolaires</p>
+            </div>
+            <div class="language-toggle">
+                <span class="lang-flag active" id="frenchBtn" onclick="switchLanguage('fr')">🇫🇷</span>
+                <span class="lang-flag" id="arabicBtn" onclick="switchLanguage('ar')">🇲🇦</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Breadcrumb navigation -->
+    <nav class="breadcrumb">
+        <div class="breadcrumb-content">
+            <a href="acceuil.html" data-fr="Accueil" data-ar="الرئيسية">Accueil</a>
+            <span class="breadcrumb-separator">›</span>
+            <span data-fr="Mise à Jour Générale" data-ar="التحديث العام">Mise à Jour Générale</span>
+        </div>
+    </nav>
+
+    <!-- Contenu principal -->
+    <main class="main-container">
+        <!-- Bouton retour -->
+        <a href="acceuil.html" class="back-button fade-in" data-fr="← Retour à l'accueil" data-ar="← العودة للرئيسية">
+            ← Retour à l'accueil
+        </a>
+
+        <!-- Information générale -->
+        <div class="info-card fade-in">
+            <h2 class="info-title" data-fr="🏫 Mise à Jour Volontaire de l'État" data-ar="🏫 التحديث الطوعي للوضع">
+                🏫 Mise à Jour Volontaire de l'État
+            </h2>
+            
+            <p class="info-description" data-fr="Envoyez un rapport volontaire sur l'état général de votre établissement. Cette communication proactive aide la Direction Régionale à mieux comprendre vos besoins." data-ar="أرسل تقريراً طوعياً حول الوضع العام لمؤسستك. هذا التواصل الاستباقي يساعد المديرية الجهوية على فهم احتياجاتك بشكل أفضل.">
+                Envoyez un rapport volontaire sur l'état général de votre établissement. 
+                Cette communication proactive aide la Direction Régionale à mieux comprendre vos besoins.
+            </p>
+            
+            <div class="school-info">
+                <div class="info-item">
+                    <div class="info-label" data-fr="Établissement" data-ar="المؤسسة">Établissement</div>
+                    <div class="info-value" data-fr="[Nom de l'École]" data-ar="[اسم المدرسة]">[Nom de l'École]</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label" data-fr="Directeur" data-ar="المدير">Directeur</div>
+                    <div class="info-value" data-fr="[Nom du Directeur]" data-ar="[اسم المدير]">[Nom du Directeur]</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label" data-fr="Région" data-ar="المنطقة">Région</div>
+                    <div class="info-value" data-fr="Fès-Meknès" data-ar="فاس - مكناس">Fès-Meknès</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label" data-fr="Date du Rapport" data-ar="تاريخ التقرير">Date du Rapport</div>
+                    <div class="info-value" data-fr="27 Juillet 2025" data-ar="27 يوليو 2025">27 Juillet 2025</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulaire de rapport -->
+        <div class="report-form fade-in">
+            <h3 class="form-title" data-fr="📝 Rapport Volontaire d'État" data-ar="📝 تقرير طوعي للوضع">
+                📝 Rapport Volontaire d'État
+            </h3>
+            
+            <form>
+                <!-- Section Infrastructure -->
+                <div class="form-section">
+                    <div class="section-header" data-fr="🏗️ Infrastructure et Bâtiments" data-ar="🏗️ البنية التحتية والمباني">
+                        🏗️ Infrastructure et Bâtiments
+                    </div>
+                    <div class="section-content">
+                        <div class="form-group">
+                            <label for="infrastructure" class="form-label" data-fr="État des salles de classe, murs, toitures, fondations" data-ar="حالة الفصول الدراسية، الجدران، الأسطح، الأسس">
+                                État des salles de classe, murs, toitures, fondations
+                            </label>
+                            <textarea 
+                                id="infrastructure" 
+                                name="infrastructure" 
+                                class="form-textarea"
+                                placeholder="Ex: Fissures dans le mur de la salle 3, infiltration d'eau dans le couloir principal, peinture écaillée..."
+                                data-placeholder-fr="Ex: Fissures dans le mur de la salle 3, infiltration d'eau dans le couloir principal, peinture écaillée..."
+                                data-placeholder-ar="مثال: تشققات في جدار القاعة 3، تسرب الماء في الممر الرئيسي، طلاء متقشر..."
+                            ></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section Équipements -->
+                <div class="form-section">
+                    <div class="section-header" data-fr="🚿 Équipements et Installations" data-ar="🚿 المعدات والمرافق">
+                        🚿 Équipements et Installations
+                    </div>
+                    <div class="section-content">
+                        <div class="form-group">
+                            <label for="equipment" class="form-label" data-fr="Sanitaires, électricité, chauffage, plomberie" data-ar="المرافق الصحية، الكهرباء، التدفئة، السباكة">
+                                Sanitaires, électricité, chauffage, plomberie
+                            </label>
+                            <textarea 
+                                id="equipment" 
+                                name="equipment" 
+                                class="form-textarea"
+                                placeholder="Ex: Besoin de 3 toilettes supplémentaires, éclairage défaillant en salle 2, robinets qui fuient..."
+                                data-placeholder-fr="Ex: Besoin de 3 toilettes supplémentaires, éclairage défaillant en salle 2, robinets qui fuient..."
+                                data-placeholder-ar="مثال: الحاجة إلى 3 مراحيض إضافية، إضاءة معطلة في القاعة 2، صنابير تتسرب..."
+                            ></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section Mobilier -->
+                <div class="form-section">
+                    <div class="section-header" data-fr="🪑 Mobilier et Matériel Pédagogique" data-ar="🪑 الأثاث والمواد التعليمية">
+                        🪑 Mobilier et Matériel Pédagogique
+                    </div>
+                    <div class="section-content">
+                        <div class="form-group">
+                            <label for="furniture" class="form-label" data-fr="Tables, chaises, tableaux, portes, fenêtres" data-ar="الطاولات، الكراسي، السبورات، الأبواب، النوافذ">
+                                Tables, chaises, tableaux, portes, fenêtres
+                            </label>
+                            <textarea 
+                                id="furniture" 
+                                name="furniture" 
+                                class="form-textarea"
+                                placeholder="Ex: 15 chaises cassées à remplacer, tableau noir illisible, stores à réparer, portes trop bruyantes..."
+                                data-placeholder-fr="Ex: 15 chaises cassées à remplacer, tableau noir illisible, stores à réparer, portes trop bruyantes..."
+                                data-placeholder-ar="مثال: 15 كرسي مكسور للاستبدال، السبورة السوداء غير واضحة، ستائر للإصلاح، أبواب مزعجة..."
+                            ></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section Sécurité -->
+                <div class="form-section">
+                    <div class="section-header" data-fr="🛡️ Sécurité et Espaces Extérieurs" data-ar="🛡️ الأمن والمساحات الخارجية">
+                        🛡️ Sécurité et Espaces Extérieurs
+                    </div>
+                    <div class="section-content">
+                        <div class="form-group">
+                            <label for="security" class="form-label" data-fr="Clôtures, portails, cour de récréation, éclairage extérieur" data-ar="الأسوار، البوابات، ساحة الاستراحة، الإضاءة الخارجية">
+                                Clôtures, portails, cour de récréation, éclairage extérieur
+                            </label>
+                            <textarea 
+                                id="security" 
+                                name="security" 
+                                class="form-textarea"
+                                placeholder="Ex: Portail d'entrée ne ferme plus, éclairage de la cour insuffisant, sol de la cour abîmé..."
+                                data-placeholder-fr="Ex: Portail d'entrée ne ferme plus, éclairage de la cour insuffisant, sol de la cour abîmé..."
+                                data-placeholder-ar="مثال: بوابة الدخول لا تغلق، إضاءة الساحة غير كافية، أرضية الساحة متضررة..."
+                            ></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section Besoins Prioritaires -->
+                <div class="form-section">
+                    <div class="section-header" data-fr="📋 Demandes et Besoins Prioritaires" data-ar="📋 الطلبات والاحتياجات ذات الأولوية">
+                        📋 Demandes et Besoins Prioritaires
+                    </div>
+                    <div class="section-content">
+                        <div class="form-group">
+                            <label for="needs" class="form-label" data-fr="Quels sont les besoins les plus urgents de votre établissement ?" data-ar="ما هي الاحتياجات الأكثر إلحاحاً في مؤسستك؟">
+                                Quels sont les besoins les plus urgents de votre établissement ?
+                            </label>
+                            <textarea 
+                                id="needs" 
+                                name="needs" 
+                                class="form-textarea"
+                                placeholder="Ex: Système de chauffage défaillant avant l'hiver, besoins en équipements informatiques, réparations urgentes..."
+                                data-placeholder-fr="Ex: Système de chauffage défaillant avant l'hiver, besoins en équipements informatiques, réparations urgentes..."
+                                data-placeholder-ar="مثال: نظام تدفئة معطل قبل الشتاء، حاجة لمعدات المعلوماتية، إصلاحات عاجلة..."
+                            ></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Niveau de priorité -->
+                <div class="form-section">
+                    <div class="section-header" data-fr="⚠️ Niveau de Priorité Global" data-ar="⚠️ مستوى الأولوية العام">
+                        ⚠️ Niveau de Priorité Global
+                    </div>
+                    <div class="section-content">
+                        <div class="form-group">
+                            <label class="form-label" data-fr="Évaluez la priorité générale de ces signalements" data-ar="قيم الأولوية العامة لهذه البلاغات">
+                                Évaluez la priorité générale de ces signalements
+                            </label>
+                            <div class="priority-grid">
+                                <div class="priority-option low" data-priority="low">
+                                    <span data-fr="🟢 Informatif" data-ar="🟢 إعلامي">🟢 Informatif</span><br>
+                                    <small data-fr="Pas urgent" data-ar="غير عاجل">Pas urgent</small>
+                                </div>
+                                <div class="priority-option medium" data-priority="medium">
+                                    <span data-fr="🟡 Modéré" data-ar="🟡 متوسط">🟡 Modéré</span><br>
+                                    <small data-fr="À prévoir" data-ar="للتخطيط">À prévoir</small>
+                                </div>
+                                <div class="priority-option high" data-priority="high">
+                                    <span data-fr="🟠 Important" data-ar="🟠 مهم">🟠 Important</span><br>
+                                    <small data-fr="À traiter" data-ar="للمعالجة">À traiter</small>
+                                </div>
+                                <div class="priority-option urgent" data-priority="urgent">
+                                    <span data-fr="🔴 Critique" data-ar="🔴 حرج">🔴 Critique</span><br>
+                                    <small data-fr="Urgent" data-ar="عاجل">Urgent</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <a href="acceuil.html" class="btn btn-secondary" data-fr="← Annuler" data-ar="← إلغاء">
+                        ← Annuler
+                    </a>
+                    <button type="submit" class="btn btn-primary" data-fr="📤 Envoyer le Rapport" data-ar="📤 إرسال التقرير">
+                        📤 Envoyer le Rapport
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        // Language switching functionality
+        let currentLanguage = localStorage.getItem('selectedLanguage') || 'fr';
+        
+        function switchLanguage(lang) {
+            currentLanguage = lang;
+            localStorage.setItem('selectedLanguage', lang);
+            
+            // Update document direction
+            document.body.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+            
+            // Update active language button
+            document.getElementById('frenchBtn').classList.toggle('active', lang === 'fr');
+            document.getElementById('arabicBtn').classList.toggle('active', lang === 'ar');
+            
+            // Update all text elements with data attributes
+            updateText();
+            
+            // Update placeholders for form elements
+            updatePlaceholders();
+        }
+        
+        function updateText() {
+            const elements = document.querySelectorAll('[data-fr][data-ar]');
+            elements.forEach(element => {
+                if (currentLanguage === 'ar') {
+                    element.textContent = element.getAttribute('data-ar');
+                } else {
+                    element.textContent = element.getAttribute('data-fr');
+                }
+            });
+        }
+        
+        function updatePlaceholders() {
+            const formElements = document.querySelectorAll('input[data-placeholder-fr], textarea[data-placeholder-fr], select[data-placeholder-fr]');
+            formElements.forEach(element => {
+                if (currentLanguage === 'ar' && element.hasAttribute('data-placeholder-ar')) {
+                    element.placeholder = element.getAttribute('data-placeholder-ar');
+                } else if (element.hasAttribute('data-placeholder-fr')) {
+                    element.placeholder = element.getAttribute('data-placeholder-fr');
+                }
+            });
+        }
+        
+        // Initialize language on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            switchLanguage(currentLanguage);
+        });
+
+        // Gestion des niveaux de priorité
+        const priorityOptions = document.querySelectorAll('.priority-option');
+        
+        priorityOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                // Retirer la sélection des autres options
+                priorityOptions.forEach(opt => opt.classList.remove('selected'));
+                // Ajouter la sélection à l'option cliquée
+                this.classList.add('selected');
+            });
+        });
+
+        // Animation d'entrée progressive
+        const sections = document.querySelectorAll('.form-section');
+        sections.forEach((section, index) => {
+            section.style.animationDelay = `${index * 0.1}s`;
+            section.classList.add('fade-in');
+        });
+
+        // Gestion de soumission du formulaire
+        document.querySelector('form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (currentLanguage === 'ar') {
+                alert('تم إرسال التقرير بنجاح إلى المديرية الجهوية!');
+            } else {
+                alert('Rapport envoyé avec succès à la Direction Régionale!');
+            }
+            window.location.href = 'acceuil.html';
+        });
+    </script>
+</body>
+</html>

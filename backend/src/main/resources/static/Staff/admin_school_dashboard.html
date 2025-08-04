@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Écoles - Direction Régionale</title>
+    <style>
+        /* Palette de couleurs pour l'interface administrateur */
+        :root {
+            --admin-primary: #1565C0;         /* Bleu administrateur */
+            --admin-secondary: #0D47A1;       /* Bleu foncé */
+            --admin-light: #E3F2FD;           /* Bleu très clair */
+            --primary-red: #C41E3A;           /* Rouge marocain */
+            --primary-green: #006233;         /* Vert marocain */
+            --accent-orange: #FF8C00;         /* Orange accent */
+            --neutral-white: #FFFFFF;
+            --light-gray: #F8F9FA;
+            --medium-gray: #6C757D;
+            --dark-gray: #343A40;
+            --border-gray: #DEE2E6;
+            --success-green: #28A745;
+            --warning-orange: #FD7E14;
+            --danger-red: #DC3545;
+            
+            --shadow-light: 0 2px 4px rgba(0,0,0,0.1);
+            --shadow-medium: 0 4px 8px rgba(0,0,0,0.15);
+            --shadow-heavy: 0 8px 16px rgba(0,0,0,0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-gray);
+            color: var(--dark-gray);
+            line-height: 1.6;
+            direction: ltr;
+            transition: direction 0.3s ease;
+        }
+
+        /* RTL Support */
+        body[dir="rtl"] {
+            direction: rtl;
+            font-family: 'Arial', 'Tahoma', sans-serif;
+        }
+
+        /* Language Toggle */
+        .language-toggle {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-left: auto;
+        }
+
+        body[dir="rtl"] .language-toggle {
+            margin-left: 0;
+            margin-right: auto;
+        }
+
+        .lang-flag {
+            font-size: 1.2rem;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .lang-flag:hover {
+            opacity: 0.8;
+            transform: scale(1.1);
+        }
+
+        .lang-flag.active {
+            opacity: 1;
+            transform: scale(1.2);
+        }
+
+        /* Header administrateur */
+        .admin-header {
+            background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-secondary) 100%);
+            color: var(--neutral-white);
+            padding: 1rem 0;
+            box-shadow: var(--shadow-medium);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .admin-logo {
+            width: 50px;
+            height: 50px;
+            background: var(--neutral-white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--admin-primary);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .header-text {
+            flex: 1;
+        }
+
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .header-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .admin-nav {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-link {
+            color: var(--neutral-white);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: background-color 0.3s ease;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Container principal */
+        .main-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        /* Barre d'actions */
+        .actions-bar {
+            background: var(--neutral-white);
+            padding: 1.5rem 2rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow-medium);
+            margin-bottom: 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .search-container {
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border: 2px solid var(--border-gray);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--admin-primary);
+            box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--medium-gray);
+        }
+
+        .filter-toggle {
+            padding: 0.75rem 1.5rem;
+            background: var(--admin-light);
+            color: var(--admin-primary);
+            border: 2px solid var(--admin-primary);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .filter-toggle:hover,
+        .filter-toggle.active {
+            background: var(--admin-primary);
+            color: var(--neutral-white);
+        }
+
+        .add-school-btn {
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, var(--success-green) 0%, #1E7E34 100%);
+            color: var(--neutral-white);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .add-school-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-heavy);
+        }
+
+        /* Actions de sélection */
+        .selection-actions {
+            background: var(--neutral-white);
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow-medium);
+            margin-bottom: 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .selection-info {
+            flex: 1;
+            font-weight: 600;
+            color: var(--admin-primary);
+        }
+
+        .selection-btn {
+            padding: 0.5rem 1rem;
+            border: 2px solid var(--admin-primary);
+            background: var(--neutral-white);
+            color: var(--admin-primary);
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .selection-btn:hover {
+            background: var(--admin-primary);
+            color: var(--neutral-white);
+        }
+
+        .send-letter-btn {
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, var(--primary-red) 0%, #B71C1C 100%);
+            color: var(--neutral-white);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .send-letter-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-heavy);
+        }
+
+        .send-letter-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .filter-select {
+            padding: 0.5rem 1rem;
+            border: 2px solid var(--admin-primary);
+            background: var(--neutral-white);
+            color: var(--admin-primary);
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            min-width: 180px;
+        }
+
+        .filter-select:hover,
+        .filter-select:focus {
+            background: var(--admin-light);
+            outline: none;
+        }
+
+        /* Grille des écoles */
+        .schools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .school-card {
+            background: var(--neutral-white);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-medium);
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .school-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-heavy);
+        }
+
+        .school-card.selected {
+            border-color: var(--admin-primary);
+            background: var(--admin-light);
+        }
+
+        .school-card.has-project {
+            border-left: 4px solid var(--warning-orange);
+        }
+
+        .school-checkbox {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .school-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--dark-gray);
+            margin-bottom: 0.5rem;
+            margin-right: 2rem;
+        }
+
+        .school-director {
+            color: var(--medium-gray);
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+        }
+
+        .school-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .detail-item {
+            color: var(--medium-gray);
+        }
+
+        .detail-item strong {
+            color: var(--dark-gray);
+        }
+
+        .project-status {
+            margin-top: 1rem;
+            padding: 0.5rem;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .project-status.active {
+            background: var(--warning-orange);
+            color: var(--neutral-white);
+        }
+
+        .project-status.none {
+            background: var(--light-gray);
+            color: var(--medium-gray);
+        }
+
+        .edit-btn {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            padding: 0.5rem;
+            background: var(--admin-primary);
+            color: var(--neutral-white);
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .edit-btn:hover {
+            background: var(--admin-secondary);
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .header-content {
+                padding: 0 1rem;
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .admin-nav {
+                order: -1;
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .main-container {
+                padding: 0 1rem;
+            }
+            
+            .actions-bar,
+            .selection-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .schools-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .school-details {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Animation */
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header administrateur -->
+    <header class="admin-header">
+        <div class="header-content">
+            <div class="admin-logo">⚙️</div>
+            <div class="header-text">
+                <h1 class="header-title" data-fr="Interface Administrateur - Direction Régionale" data-ar="واجهة الإدارة - المديرية الجهوية">Interface Administrateur - Direction Régionale</h1>
+                <p class="header-subtitle" data-fr="Gestion des Établissements et Communication" data-ar="إدارة المؤسسات والتواصل">Gestion des Établissements et Communication</p>
+            </div>
+            <nav class="admin-nav">
+                <a href="#" class="nav-link active" data-fr="Écoles" data-ar="المدارس">Écoles</a>
+                <a href="letter_management_page.html" class="nav-link" data-fr="Lettres" data-ar="الرسائل">Lettres</a>
+                <a href="#" class="nav-link" data-fr="Statistiques" data-ar="الإحصائيات">Statistiques</a>
+            </nav>
+            <div class="language-toggle">
+                <span class="lang-flag active" id="frenchBtn" onclick="switchLanguage('fr')">🇫🇷</span>
+                <span class="lang-flag" id="arabicBtn" onclick="switchLanguage('ar')">🇲🇦</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenu principal -->
+    <main class="main-container">
+        <!-- Barre d'actions -->
+        <div class="actions-bar fade-in">
+            <div class="search-container">
+                <input type="text" class="search-input" placeholder="Rechercher une école par nom..." data-fr-placeholder="Rechercher une école par nom..." data-ar-placeholder="البحث عن مدرسة بالاسم..." id="schoolSearch">
+                <span class="search-icon">🔍</span>
+            </div>
+            
+            <button id="addSchoolButton" class="add-school-btn" data-fr="➕ Ajouter École" data-ar="➕ إضافة مدرسة">
+                ➕ Ajouter École
+            </button>
+        </div>
+
+        <!-- Actions de sélection et filtres -->
+        <div class="selection-actions fade-in">
+            <div class="selection-info">
+                <span id="selectedCount">0</span> <span data-fr="école(s) sélectionnée(s)" data-ar="مدرسة محددة">école(s) sélectionnée(s)</span>
+            </div>
+            
+            <div class="filter-group">
+                <button class="selection-btn" id="toggleSelectBtn" onclick="toggleSelectAll()" data-fr="Sélectionner visible" data-ar="تحديد المرئي">
+                    Sélectionner visible
+                </button>
+                
+                <button class="filter-toggle" id="projectFilter" data-fr="📊 Projets uniquement" data-ar="📊 المشاريع فقط">
+                    📊 Projets uniquement
+                </button>
+                
+                <select class="filter-select" id="technicianFilter" onchange="filterByTechnician()">
+                    <option value="" data-fr="Tous les techniciens" data-ar="جميع التقنيين">Tous les techniciens</option>
+                    <option value="hassan-idrissi">Hassan Idrissi</option>
+                    <option value="fatima-bennani">Fatima Bennani</option>
+                    <option value="omar-elkhadir">Omar El Khadir</option>
+                    <option value="aicha-slaoui">Aicha Slaoui</option>
+                    <option value="youssef-tazi">Youssef Tazi</option>
+                </select>
+            </div>
+            
+            <button class="send-letter-btn" id="sendLetterBtn" onclick="sendLetters()" disabled data-fr="📧 Envoyer Lettre" data-ar="📧 إرسال رسالة">
+                📧 Envoyer Lettre
+            </button>
+        </div>
+
+        <!-- Grille des écoles -->
+        <div class="schools-grid fade-in" id="schoolsGrid">
+            <!-- Les écoles seront affichées ici une fois configurées -->
+            <div class="empty-state">
+                <div class="empty-icon">🏫</div>
+                <div class="empty-title" data-fr="Aucune école configurée" data-ar="لا توجد مدارس مكونة">Aucune école configurée</div>
+                <div class="empty-description" data-fr="Ajoutez des établissements scolaires pour commencer la gestion." data-ar="أضف المؤسسات التعليمية لبدء الإدارة.">
+                    Ajoutez des établissements scolaires pour commencer la gestion.
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Variables globales
+        let selectedSchools = new Set();
+        let isProjectFilterActive = false;
+
+        // Ouvrir la page de détail d'une école
+        function openSchoolDetail(schoolId, event) {
+            if (event) {
+                event.stopPropagation();
+            }
+            window.location.href = `school_detail_page.html?id=${schoolId}`;
+        }
+
+        // Ouvrir la page pour ajouter une nouvelle école
+        function openAddSchool(event) {
+            if (event) {
+                event.stopPropagation();
+            }
+            window.location.href = `school_detail_page.html?id=null`;
+        }
+
+        // Gestion de la sélection
+        function updateSelection() {
+            const checkboxes = document.querySelectorAll('.school-checkbox');
+            selectedSchools.clear();
+            
+            checkboxes.forEach(checkbox => {
+                const schoolCard = checkbox.closest('.school-card');
+                if (checkbox.checked) {
+                    selectedSchools.add(schoolCard.dataset.schoolId);
+                    schoolCard.classList.add('selected');
+                } else {
+                    schoolCard.classList.remove('selected');
+                }
+            });
+            
+            // Update toggle button text based on current language and selection state
+            updateToggleButtonText();
+            
+            document.getElementById('selectedCount').textContent = selectedSchools.size;
+            document.getElementById('sendLetterBtn').disabled = selectedSchools.size === 0;
+        }
+
+        function toggleSelectAll() {
+            const visibleCards = document.querySelectorAll('.school-card:not([style*="display: none"])');
+            const toggleBtn = document.getElementById('toggleSelectBtn');
+            
+            // Check if any visible schools are selected
+            let hasSelectedVisible = false;
+            visibleCards.forEach(card => {
+                const checkbox = card.querySelector('.school-checkbox');
+                if (checkbox.checked) {
+                    hasSelectedVisible = true;
+                }
+            });
+            
+            // If any visible schools are selected, deselect all
+            // If no visible schools are selected, select all visible
+            visibleCards.forEach(card => {
+                const checkbox = card.querySelector('.school-checkbox');
+                checkbox.checked = !hasSelectedVisible;
+            });
+            
+            // Update button text based on the action taken
+            if (hasSelectedVisible) {
+                toggleBtn.textContent = 'Sélectionner visible';
+            } else {
+                toggleBtn.textContent = 'Désélectionner tout';
+            }
+            
+            updateSelection();
+        }
+
+        // Filtrage et recherche
+        document.getElementById('schoolSearch').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const schoolCards = document.querySelectorAll('.school-card');
+            
+            schoolCards.forEach(card => {
+                const schoolName = card.querySelector('.school-name').textContent.toLowerCase();
+                const directorName = card.querySelector('.school-director').textContent.toLowerCase();
+                
+                if (schoolName.includes(searchTerm) || directorName.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+
+        document.getElementById('projectFilter').addEventListener('click', function() {
+            isProjectFilterActive = !isProjectFilterActive;
+            this.classList.toggle('active');
+            
+            const schoolCards = document.querySelectorAll('.school-card');
+            schoolCards.forEach(card => {
+                if (isProjectFilterActive) {
+                    if (card.dataset.hasProject === 'true') {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                } else {
+                    card.style.display = 'block';
+                }
+            });
+        });
+
+        // Filtrage par technicien
+        function filterByTechnician() {
+            const selectedTechnician = document.getElementById('technicianFilter').value;
+            const schoolCards = document.querySelectorAll('.school-card');
+            
+            schoolCards.forEach(card => {
+                const cardTechnician = card.dataset.technician;
+                const hasProject = card.dataset.hasProject === 'true';
+                
+                if (selectedTechnician === '') {
+                    // Show all schools when no technician filter is selected
+                    card.style.display = 'block';
+                } else if (hasProject && cardTechnician === selectedTechnician) {
+                    // Show schools that have projects and match the selected technician
+                    card.style.display = 'block';
+                } else {
+                    // Hide schools that don't match
+                    card.style.display = 'none';
+                }
+            });
+            
+            // Clear selection since visible schools changed
+            const checkboxes = document.querySelectorAll('.school-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            updateSelection();
+        }
+
+        // Language switching functionality with persistence
+        let currentLanguage = localStorage.getItem('selectedLanguage') || 'fr';
+
+        function switchLanguage(lang) {
+            currentLanguage = lang;
+            localStorage.setItem('selectedLanguage', lang);
+            const body = document.body;
+            
+            // Update direction
+            if (lang === 'ar') {
+                body.setAttribute('dir', 'rtl');
+            } else {
+                body.setAttribute('dir', 'ltr');
+            }
+            
+            // Update active flag
+            document.querySelectorAll('.lang-flag').forEach(flag => flag.classList.remove('active'));
+            document.getElementById(lang === 'fr' ? 'frenchBtn' : 'arabicBtn').classList.add('active');
+            
+            // Update all text elements
+            document.querySelectorAll('[data-fr]').forEach(element => {
+                const text = element.getAttribute(`data-${lang}`);
+                if (text) {
+                    element.textContent = text;
+                }
+            });
+            
+            // Update placeholders
+            document.querySelectorAll('[data-fr-placeholder]').forEach(element => {
+                const placeholder = element.getAttribute(`data-${lang}-placeholder`);
+                if (placeholder) {
+                    element.placeholder = placeholder;
+                }
+            });
+            
+            // Update toggle select button text based on current state
+            updateToggleButtonText();
+        }
+
+        // Initialize language on page load
+        function initializeLanguage() {
+            switchLanguage(currentLanguage);
+        }
+
+        function updateToggleButtonText() {
+            const toggleBtn = document.getElementById('toggleSelectBtn');
+            const visibleCards = document.querySelectorAll('.school-card:not([style*="display: none"])');
+            let hasSelectedVisible = false;
+            visibleCards.forEach(card => {
+                const checkbox = card.querySelector('.school-checkbox');
+                if (checkbox.checked) {
+                    hasSelectedVisible = true;
+                }
+            });
+            
+            if (currentLanguage === 'ar') {
+                toggleBtn.textContent = hasSelectedVisible ? 'إلغاء تحديد الكل' : 'تحديد المرئي';
+            } else {
+                toggleBtn.textContent = hasSelectedVisible ? 'Désélectionner tout' : 'Sélectionner visible';
+            }
+        }
+
+        // Envoyer des lettres
+        function sendLetters() {
+            const message = currentLanguage === 'ar' ? 
+                'يرجى تحديد مدرسة واحدة على الأقل' : 
+                'Veuillez sélectionner au moins une école';
+            
+            if (selectedSchools.size === 0) {
+                alert(message);
+                return;
+            }
+            
+            const selectedCount = selectedSchools.size;
+            const confirmMsg = currentLanguage === 'ar' ? 
+                `إرسال رسالة إلى ${selectedCount} مدرسة محددة؟` :
+                `Envoyer une lettre à ${selectedCount} école(s) sélectionnée(s) ?`;
+            const successMsg = currentLanguage === 'ar' ? 
+                `تم إرسال الرسائل إلى ${selectedCount} مدرسة بنجاح!` :
+                `Lettres envoyées à ${selectedCount} école(s) avec succès!`;
+            
+            if (confirm(confirmMsg)) {
+                alert(successMsg);
+                clearSelection();
+            }
+        }
+
+        // Initialize language when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeLanguage();
+        });
+
+        // Add event listener for add school button
+        document.getElementById('addSchoolButton').addEventListener('click', openAddSchool);
+    </script>
+</body>
+</html>
