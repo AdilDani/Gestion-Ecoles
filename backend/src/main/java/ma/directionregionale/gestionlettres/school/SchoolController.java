@@ -1,6 +1,6 @@
 package ma.directionregionale.gestionlettres.school;
 
-import ma.directionregionale.gestionlettres.dto.SchoolAddRequest;
+import ma.directionregionale.gestionlettres.dto.SchoolSaveRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,9 +14,15 @@ public class SchoolController {
     private SchoolService schoolService;
 
     @PostMapping
-    public School addNewSchool(@RequestBody SchoolAddRequest request) {
+    public School addNewSchool(@RequestBody SchoolSaveRequest request) {
         return schoolService.addNewSchool(request);
     }
+
+    @PutMapping
+    public School updateSchool(@RequestBody SchoolSaveRequest request){
+        return schoolService.updateSchool(request);
+    }
+
 
 
     @GetMapping("")

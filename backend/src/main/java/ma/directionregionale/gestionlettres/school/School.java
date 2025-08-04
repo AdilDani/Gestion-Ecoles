@@ -13,6 +13,7 @@ public class School {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
+    private String schoolname;
     private String codegrais;
     private String username;
     private String password;

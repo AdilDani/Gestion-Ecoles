@@ -740,11 +740,11 @@
 
             <div class="quick-stats">
                 <div class="stat-item">
-                    <div id="numberOfStudents" class="stat-number">0</div>
+                    <div id="statNumberOfStudents" class="stat-number">0</div>
                     <div class="stat-label" data-fr="Élèves" data-ar="الطلاب">Élèves</div>
                 </div>
                 <div class="stat-item">
-                    <div id="numberOfClassrooms"class="stat-number">0</div>
+                    <div id="statNumberOfClassrooms" class="stat-number">0</div>
                     <div class="stat-label" data-fr="Classes" data-ar="الفصول">Classes</div>
                 </div>
                 <div class="stat-item">
@@ -1149,7 +1149,7 @@
             const educationLevels = [];
             const educationCheckboxes = document.querySelectorAll('input[name="education-level"]:checked');
             educationCheckboxes.forEach(checkbox => {
-                if (checkbox.value === 'primary') educationLevels.push('primary');
+                if (checkbox.value === 'primary') educationLevels.push('primaire');
                 if (checkbox.value === 'middle') educationLevels.push('college');
                 if (checkbox.value === 'high') educationLevels.push('lycee');
             });
@@ -1157,6 +1157,7 @@
 
             // Collect form data
             const schoolData = {
+                schoolname: document.getElementById('schoolName').value,
                 codegrais: document.getElementById('codeGrais').value,
                 username: document.getElementById('accountUsername').value,
                 password: document.getElementById('accountPassword').value,
@@ -1171,25 +1172,62 @@
                 hasProject: document.getElementById('projectToggle').checked
             };
 
-            console.log('School data to save:', schoolData);
+            const urlParams = new URLSearchParams(window.location.search);
+            const schoolId = urlParams.get('id');
 
-            fetch('http://localhost:8080/api/schools', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(schoolData)
-            })
-                .then(response => {
-                    return response.json();
+            //school create fetch. id=null
+            if (schoolId == "null") {
+                console.log('School data to save:', schoolData);
+
+
+                fetch('http://localhost:8080/api/schools', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(schoolData)
                 })
-                .then(data => {
-                    const message = currentLanguage === 'ar' ?
-                        'تم تحديث المدرسة بنجاح!' :
-                        'École mise à jour avec succès!';
-                    alert(message);
-                    window.location.href = 'admin_school_dashboard.html';
+                    .then(response => {
+                        return response.json();
+                    })
+                    .then(data => {
+                        const message = currentLanguage === 'ar' ?
+                            'تم تحديث المدرسة بنجاح!' :
+                            'École mise à jour avec succès!';
+                        alert(message);
+                        window.location.href = 'admin_school_dashboard.html';
+                    })
+            }
+
+
+            if (schoolId != "null") {
+                schoolData.id = schoolId
+                console.log('School data to save:', schoolData);
+
+
+                fetch('http://localhost:8080/api/schools', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(schoolData)
                 })
+                    .then(response => {
+                        console.log("the response for put save",response)
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log("the data for put save",data)
+                        const message = currentLanguage === 'ar' ?
+                            'تم تحديث المدرسة بنجاح!' :
+                            'École mise à jour avec succès!';
+                        alert(message);
+                        window.location.href = 'admin_school_dashboard.html';
+                    })
+            }
+
+
+
 
 
 
@@ -1421,14 +1459,54 @@
 
                 })
                     .then(response => {
-                        if(!response.ok){
+                        if (!response.ok) {
+                            window.location.href = "admin_school_dashboard.html"
                             throw new Error("im not ok")
                         }
                         return response.json();
                     })
                     .then(data => {
+                        // Update stat display and school name
+                        document.getElementById("statNumberOfStudents").textContent = data.numberofstudents || 0;
+                        document.getElementById("statNumberOfClassrooms").textContent = data.numberofclassrooms || 0;
+                        document.getElementById('schoolName').value = data.schoolname;
+                        document.getElementById('codeGrais').value = data.codegrais
+                        document.getElementById('accountUsername').value = data.username
+                        document.getElementById('accountPassword').value = data.password
+                        document.getElementById('phoneNumber').value = data.phonenumber
+                        document.getElementById('region').value = data.region
+                        document.getElementById('numberOfStudents').value = data.numberofstudents
+                        document.getElementById('numberOfClassrooms').value = data.numberofclassrooms
+                        document.getElementById('directorFirstName').value = data.directorfirstname
+                        document.getElementById('directorLastName').value = data.directorlastname
 
-                        
+                        // Handle education level checkboxes
+                        if (data.educationlevel) {
+                            // Reset all checkboxes first
+                            document.querySelectorAll('input[name="education-level"]').forEach(checkbox => {
+                                checkbox.checked = false;
+                            });
+
+                            const educationLevel = data.educationlevel.toLowerCase();
+
+                            // Check for each education level
+                            if (educationLevel.includes('primaire')) {
+                                document.querySelector('input[name="education-level"][value="primary"]').checked = true;
+                            }
+                            if (educationLevel.includes('college')) {
+                                document.querySelector('input[name="education-level"][value="middle"]').checked = true;
+                            }
+                            if (educationLevel.includes('lycee')) {
+                                document.querySelector('input[name="education-level"][value="high"]').checked = true;
+                            }
+                        }
+
+                        // Set toggles and trigger their functions to show/hide sections
+                        document.getElementById('branchesToggle').checked = data.hasBranch;
+                        toggleBranches();
+
+                        document.getElementById('projectToggle').checked = data.hasProject;
+                        toggleProjects();
 
                     })
             }

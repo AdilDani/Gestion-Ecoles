@@ -5,7 +5,9 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class SchoolAddRequest {
+public class SchoolSaveRequest {
+    private String id;
+    private String schoolname;
     private String codegrais;
     private String username;
     private String password;
