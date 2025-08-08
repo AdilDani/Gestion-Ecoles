@@ -265,6 +265,28 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            justify-content: space-between;
+        }
+
+        .top-save-btn {
+            padding: 0.75rem 1.5rem;
+            background: var(--admin-primary);
+            color: var(--neutral-white);
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .top-save-btn:hover {
+            background: var(--admin-secondary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-heavy);
         }
 
         .form-grid {
@@ -763,6 +785,10 @@
             <h2 class="form-title">
                 <span data-fr="📝 Informations de l'École" data-ar="📝 معلومات المدرسة">📝 Informations de
                     l'École</span>
+                <button type="button" class="top-save-btn" onclick="saveSchool()"
+                    data-fr="💾 Sauvegarder les Modifications" data-ar="💾 حفظ التعديلات">
+                    💾 Sauvegarder les Modifications
+                </button>
             </h2>
 
             <form>
@@ -1037,6 +1063,7 @@
             const projectCard = document.createElement('div');
             projectCard.className = 'branch-card';
             projectCard.innerHTML = `
+                <input type="hidden" class="project-id" value="null">
                 <div class="branch-header">
                     <input type="text" class="form-input" placeholder="Nom du projet" value="Nouveau Projet ${projectCount}" style="font-weight: 600; margin-bottom: 0.5rem;">
                     <button type="button" class="btn-danger" onclick="removeProject(this)" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; margin-left: auto;">
@@ -1066,22 +1093,20 @@
                         <input type="number" class="form-input" min="0" max="100" value="0" placeholder="%">
                     </div>
                     
-                    <div class="form-group project-branch-assignment" style="display: none;">
+                    <div class="form-group project-branch-assignment">
                         <label class="form-label">Assigné à</label>
                         <select class="form-select branch-select">
-                            <option value="main">École Principale</option>
+                            <!-- Options will be populated by updateProjectBranchAssignments() -->
                         </select>
                     </div>
                     
                     <div class="form-group">
                         <label class="form-label">Technicien Assigné</label>
-                        <select class="form-select">
-                            <option value="">-- Sélectionner un technicien --</option>
-                            <option value="hassan-idrissi">Hassan Idrissi</option>
-                            <option value="fatima-bennani">Fatima Bennani</option>
-                            <option value="omar-elkhadir">Omar El Khadir</option>
-                            <option value="aicha-slaoui">Aicha Slaoui</option>
-                            <option value="youssef-tazi">Youssef Tazi</option>
+                        <select class="form-select technician-select">
+                            <option value="null">-- Sélectionner un technicien --</option>
+                            ${technicianList.map(tech => 
+                                `<option value="${tech.technicianid}">${tech.technicianfirstname} ${tech.technicianlastname}</option>`
+                            ).join('')}
                         </select>
                     </div>
                 </div>
@@ -1101,6 +1126,24 @@
                 updateSchoolProjectStatus();
             }
         }
+
+        // Global technician list
+        const technicianList = [
+            {technicianfirstname: 'Hassan', technicianlastname: 'Baker', technicianid: '123'},
+            {technicianfirstname: 'Tech', technicianlastname: 'Nician', technicianid: '122'},
+            {technicianfirstname: 'Fatima', technicianlastname: 'Bennani', technicianid: '124'},
+            {technicianfirstname: 'Omar', technicianlastname: 'El Khadir', technicianid: '125'},
+            {technicianfirstname: 'Aicha', technicianlastname: 'Slaoui', technicianid: '126'}
+        ];
+
+        // Enhanced ID tracking system for project assignments
+        let schoolId = null; // Main school's database ID
+        let branchIdToPositionMap = new Map(); // Maps branch DB ID -> form position
+        let positionToBranchDataMap = new Map(); // Maps form position -> branch data
+        
+        // Global school and branches data for dropdown population
+        let currentSchoolData = null;
+        let currentBranchesData = null;
 
         // Language switching functionality with persistence
         let currentLanguage = localStorage.getItem('selectedLanguage') || 'fr';
@@ -1144,7 +1187,7 @@
         }
 
         // Save school data
-        function saveSchool() {
+        async function saveSchool() {
             // Get education levels
             const educationLevels = [];
             const educationCheckboxes = document.querySelectorAll('input[name="education-level"]:checked');
@@ -1154,6 +1197,54 @@
                 if (checkbox.value === 'high') educationLevels.push('lycee');
             });
             const educationLevel = educationLevels.join('_');
+
+            // Collect branches data
+            const branches = [];
+            if (document.getElementById('branchesToggle').checked) {
+                const branchCards = document.querySelectorAll('#branchesContainer .branch-card');
+                branchCards.forEach(card => {
+                    const branchNameInput = card.querySelector('input[placeholder*="branche"]');
+                    const codeGraisInput = card.querySelector('input[placeholder*="Code"]');
+                    const studentsInput = card.querySelector('input[type="number"]');
+                    
+                    const branch = {
+                        id: card.querySelector('.branch-id').value,
+                        branchname: branchNameInput ? branchNameInput.value.trim() : '',
+                        codegrais: codeGraisInput ? codeGraisInput.value.trim() : '',
+                        numberofstudents: studentsInput ? studentsInput.value.toString() : '0'
+                    };
+                    
+                    branches.push(branch);
+                });
+            }
+
+            // Collect projects data
+            const projects = [];
+            if (document.getElementById('projectToggle').checked) {
+                const projectCards = document.querySelectorAll('#projectsContainer .branch-card');
+                projectCards.forEach(card => {
+                    const projectNameInput = card.querySelector('input[placeholder*="projet"]');
+                    const projectTypeSelect = card.querySelector('select');
+                    const projectIdInput = card.querySelector('input[placeholder*="PRJ"]');
+                    const progressInput = card.querySelector('input[type="number"]');
+                    const technicianSelect = card.querySelector('.technician-select');
+                    
+                    const project = {
+                        id: card.querySelector('.project-id').value,
+                        projectcode: projectIdInput ? projectIdInput.value.trim() : '',
+                        projectprogress: progressInput ? progressInput.value : '0',
+                        projecttype: projectTypeSelect ? projectTypeSelect.value : 'extension',
+                        assignedestablishment: card.querySelector('.branch-select').value // 'main' or positional string
+                    };
+                    
+                    // Handle technician assignment
+                    const technicianValue = technicianSelect ? technicianSelect.value : 'null';
+                    project.assignedtechnician = technicianValue;
+                    
+                    
+                    projects.push(project);
+                });
+            }
 
             // Collect form data
             const schoolData = {
@@ -1167,16 +1258,22 @@
                 numberofclassrooms: document.getElementById('numberOfClassrooms').value,
                 directorfirstname: document.getElementById('directorFirstName').value,
                 directorlastname: document.getElementById('directorLastName').value,
-                educationlevel: educationLevel,
-                hasBranch: document.getElementById('branchesToggle').checked,
-                hasProject: document.getElementById('projectToggle').checked
+                educationlevel: educationLevel
             };
+            
+            // Only add branches and projects arrays if they contain data
+            if (branches.length > 0) {
+                schoolData.branches = branches;
+            }
+            if (projects.length > 0) {
+                schoolData.projects = projects;
+            }
 
             const urlParams = new URLSearchParams(window.location.search);
-            const schoolId = urlParams.get('id');
+            const schoolIdParam = urlParams.get('id');
 
             //school create fetch. id=null
-            if (schoolId == "null") {
+            if (schoolIdParam == "null") {
                 console.log('School data to save:', schoolData);
 
 
@@ -1197,11 +1294,16 @@
                         alert(message);
                         window.location.href = 'admin_school_dashboard.html';
                     })
+
+
+
+                
+
             }
 
 
-            if (schoolId != "null") {
-                schoolData.id = schoolId
+            if (schoolIdParam != "null") {
+                schoolData.id = schoolIdParam
                 console.log('School data to save:', schoolData);
 
 
@@ -1213,11 +1315,11 @@
                     body: JSON.stringify(schoolData)
                 })
                     .then(response => {
-                        console.log("the response for put save",response)
+                        console.log("the response for put save", response)
                         return response.json();
                     })
                     .then(data => {
-                        console.log("the data for put save",data)
+                        console.log("the data for put save", data)
                         const message = currentLanguage === 'ar' ?
                             'تم تحديث المدرسة بنجاح!' :
                             'École mise à jour avec succès!';
@@ -1270,6 +1372,7 @@
             const branchCard = document.createElement('div');
             branchCard.className = 'branch-card';
             branchCard.innerHTML = `
+                <input type="hidden" class="branch-id" value="null">
                 <div class="branch-header">
                     <input type="text" class="form-input" placeholder="Nom de la branche" value="Nouvelle Branche ${branchCount}" style="font-weight: 600; margin-bottom: 0.5rem;">
                     <button type="button" class="btn-danger" onclick="removeBranch(this)" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; margin-left: auto;">
@@ -1301,47 +1404,102 @@
 
             if (confirm(confirmMsg)) {
                 button.closest('.branch-card').remove();
+                rebuildBranchPositionMaps();
                 updateProjectBranchAssignments();
+                validateProjectAssignments();
                 updateSchoolProjectStatus();
             }
         }
 
-        // Update project branch assignment dropdowns
-        function updateProjectBranchAssignments() {
-            const branchesToggle = document.getElementById('branchesToggle');
+        // Rebuild branch position mappings after DOM changes
+        function rebuildBranchPositionMaps() {
+            branchIdToPositionMap.clear();
+            positionToBranchDataMap.clear();
+            
+            const branchCards = document.querySelectorAll('#branchesContainer .branch-card');
+            branchCards.forEach((card, index) => {
+                const branchIdInput = card.querySelector('.branch-id');
+                const branchNameInput = card.querySelector('input[placeholder*="branche"]');
+                const branchId = branchIdInput ? branchIdInput.value : null;
+                const position = (index + 1).toString();
+                
+                if (branchId && branchId !== 'null') {
+                    branchIdToPositionMap.set(branchId, position);
+                    positionToBranchDataMap.set(position, {
+                        id: branchId,
+                        name: branchNameInput ? branchNameInput.value : `Branche ${index + 1}`
+                    });
+                }
+            });
+        }
+
+        // Validate and fix orphaned project assignments
+        function validateProjectAssignments() {
             const projectCards = document.querySelectorAll('#projectsContainer .branch-card');
+            projectCards.forEach(card => {
+                const branchSelect = card.querySelector('.branch-select');
+                const currentValue = branchSelect.value;
+                
+                // Check if current selection is still valid
+                if (currentValue !== 'main') {
+                    // Check if position still exists
+                    const branchCards = document.querySelectorAll('#branchesContainer .branch-card');
+                    const positionExists = Array.from(branchCards).some((_, index) => 
+                        (index + 1).toString() === currentValue
+                    );
+                    
+                    if (!positionExists) {
+                        // Reset to main if invalid
+                        branchSelect.value = 'main';
+                        console.warn('Reset orphaned project assignment to main school');
+                    }
+                }
+            });
+        }
+
+        // Debug helper function
+        function debugAssignmentState() {
+            console.log('School ID:', schoolId);
+            console.log('Branch ID to Position Map:', branchIdToPositionMap);
+            console.log('Position to Branch Data Map:', positionToBranchDataMap);
+        }
+
+        // Update project branch assignment dropdowns using form state
+        function updateProjectBranchAssignments() {
+            const projectCards = document.querySelectorAll('#projectsContainer .branch-card');
+            const branchCards = document.querySelectorAll('#branchesContainer .branch-card');
 
             projectCards.forEach(projectCard => {
-                const branchAssignmentField = projectCard.querySelector('.project-branch-assignment');
                 const branchSelect = projectCard.querySelector('.branch-select');
 
-                if (branchesToggle.checked) {
-                    // Show branch assignment field
-                    branchAssignmentField.style.display = 'block';
+                // Store current selection before clearing
+                const currentValue = branchSelect.value;
 
-                    // Clear existing options except main school
-                    branchSelect.innerHTML = '';
+                // Clear existing options
+                branchSelect.innerHTML = '';
 
-                    // Add main school option
-                    const mainOption = document.createElement('option');
-                    mainOption.value = 'main';
-                    mainOption.textContent = currentLanguage === 'ar' ? 'المدرسة الرئيسية' : 'École Principale';
-                    branchSelect.appendChild(mainOption);
+                // Add main school option (always use 'main' as value for form)
+                const mainOption = document.createElement('option');
+                mainOption.value = 'main';
+                mainOption.textContent = currentLanguage === 'ar' ? 'المدرسة الرئيسية' : 'École Principale';
+                branchSelect.appendChild(mainOption);
 
-                    // Add branch options
-                    const branchCards = document.querySelectorAll('#branchesContainer .branch-card');
-                    branchCards.forEach((branchCard, index) => {
-                        const branchNameInput = branchCard.querySelector('input[placeholder*="branche"], input[placeholder*="فرع"]');
-                        const branchName = branchNameInput ? branchNameInput.value : `Branche ${index + 1}`;
+                // Add branch options using form positions
+                branchCards.forEach((branchCard, index) => {
+                    const branchNameInput = branchCard.querySelector('input[placeholder*="branche"]');
+                    const branchName = branchNameInput ? branchNameInput.value.trim() : '';
+                    const displayName = branchName || `Branche ${index + 1}`;
+                    const position = (index + 1).toString();
+                    
+                    const branchOption = document.createElement('option');
+                    branchOption.value = position; // Use position as value
+                    branchOption.textContent = displayName;
+                    branchSelect.appendChild(branchOption);
+                });
 
-                        const branchOption = document.createElement('option');
-                        branchOption.value = `branch-${index}`;
-                        branchOption.textContent = branchName;
-                        branchSelect.appendChild(branchOption);
-                    });
-                } else {
-                    // Hide branch assignment field when no branches
-                    branchAssignmentField.style.display = 'none';
+                // Restore previous selection if it still exists
+                if (currentValue && [...branchSelect.options].some(option => option.value === currentValue)) {
+                    branchSelect.value = currentValue;
                 }
             });
         }
@@ -1448,10 +1606,10 @@
 
             //check which mode the page is loaded in as
             const urlParams = new URLSearchParams(window.location.search);
-            const schoolId = urlParams.get('id');
+            const schoolIdParam = urlParams.get('id');
 
-            if (schoolId != "null") {
-                fetch(`http://localhost:8080/api/schools/${schoolId}`, {
+            if (schoolIdParam != "null") {
+                fetch(`http://localhost:8080/api/schools/${schoolIdParam}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1466,28 +1624,56 @@
                         return response.json();
                     })
                     .then(data => {
+                        // Extract nested data
+                        const school = data.schoolDetails;
+                        const projects = data.projects || [];
+                        const branches = data.branches || [];
+                        
+                        // Store globally for dropdown population
+                        currentSchoolData = school;
+                        currentBranchesData = branches;
+                        
+                        // Initialize ID tracking system
+                        schoolId = school.id;
+                        branchIdToPositionMap.clear();
+                        positionToBranchDataMap.clear();
+                        
+                        // Build branch position mapping
+                        branches.forEach((branch, index) => {
+                            const position = (index + 1).toString();
+                            branchIdToPositionMap.set(branch.id, position);
+                            positionToBranchDataMap.set(position, branch);
+                        });
+                        
+                        // Calculate total students (main school + branches)
+                        const branchStudents = branches.reduce((sum, branch) => sum + parseInt(branch.numberofstudents || 0), 0);
+                        const totalStudents = parseInt(school.numberofstudents || 0) + branchStudents;
+                        
                         // Update stat display and school name
-                        document.getElementById("statNumberOfStudents").textContent = data.numberofstudents || 0;
-                        document.getElementById("statNumberOfClassrooms").textContent = data.numberofclassrooms || 0;
-                        document.getElementById('schoolName').value = data.schoolname;
-                        document.getElementById('codeGrais').value = data.codegrais
-                        document.getElementById('accountUsername').value = data.username
-                        document.getElementById('accountPassword').value = data.password
-                        document.getElementById('phoneNumber').value = data.phonenumber
-                        document.getElementById('region').value = data.region
-                        document.getElementById('numberOfStudents').value = data.numberofstudents
-                        document.getElementById('numberOfClassrooms').value = data.numberofclassrooms
-                        document.getElementById('directorFirstName').value = data.directorfirstname
-                        document.getElementById('directorLastName').value = data.directorlastname
+                        document.getElementById("statNumberOfStudents").textContent = totalStudents;
+                        document.getElementById("statNumberOfClassrooms").textContent = school.numberofclassrooms || 0;
+                        document.querySelector('.school-name').textContent = school.schoolname || 'École sans nom';
+                        
+                        // Populate form fields with school details
+                        document.getElementById('schoolName').value = school.schoolname || '';
+                        document.getElementById('codeGrais').value = school.codegrais || '';
+                        document.getElementById('accountUsername').value = school.username || '';
+                        document.getElementById('accountPassword').value = school.password || '';
+                        document.getElementById('phoneNumber').value = school.phonenumber || '';
+                        document.getElementById('region').value = school.region || '';
+                        document.getElementById('numberOfStudents').value = school.numberofstudents || '';
+                        document.getElementById('numberOfClassrooms').value = school.numberofclassrooms || '';
+                        document.getElementById('directorFirstName').value = school.directorfirstname || '';
+                        document.getElementById('directorLastName').value = school.directorlastname || '';
 
                         // Handle education level checkboxes
-                        if (data.educationlevel) {
+                        if (school.educationlevel) {
                             // Reset all checkboxes first
                             document.querySelectorAll('input[name="education-level"]').forEach(checkbox => {
                                 checkbox.checked = false;
                             });
 
-                            const educationLevel = data.educationlevel.toLowerCase();
+                            const educationLevel = school.educationlevel.toLowerCase();
 
                             // Check for each education level
                             if (educationLevel.includes('primaire')) {
@@ -1501,14 +1687,103 @@
                             }
                         }
 
-                        // Set toggles and trigger their functions to show/hide sections
-                        document.getElementById('branchesToggle').checked = data.hasBranch;
+                        // Set toggles based on array lengths and populate existing data
+                        const hasBranches = branches.length > 0;
+                        const hasProjects = projects.length > 0;
+                        
+                        document.getElementById('branchesToggle').checked = hasBranches;
                         toggleBranches();
-
-                        document.getElementById('projectToggle').checked = data.hasProject;
+                        
+                        document.getElementById('projectToggle').checked = hasProjects;
                         toggleProjects();
+                        
+                        // Populate existing branches
+                        if (hasBranches) {
+                            branches.forEach((branch, index) => {
+                                addBranch();
+                                const branchCards = document.querySelectorAll('#branchesContainer .branch-card');
+                                const currentBranchCard = branchCards[branchCards.length - 1];
+                                
+                                // Populate branch data
+                                const branchIdInput = currentBranchCard.querySelector('.branch-id');
+                                const branchNameInput = currentBranchCard.querySelector('input[placeholder*="branche"]');
+                                const codeGraisInput = currentBranchCard.querySelector('input[placeholder*="Code"]');
+                                const studentsInput = currentBranchCard.querySelector('input[type="number"]');
+                                
+                                if (branchIdInput && branch.id) branchIdInput.value = branch.id;
+                                if (branchNameInput) branchNameInput.value = branch.branchname || `Branche ${index + 1}`;
+                                if (codeGraisInput) codeGraisInput.value = branch.codegrais || '';
+                                if (studentsInput) studentsInput.value = branch.numberofstudents || 0;
+                            });
+                        }
+                        
+                        // Populate existing projects
+                        if (hasProjects) {
+                            projects.forEach((project, index) => {
+                                addProject();
+                                const projectCards = document.querySelectorAll('#projectsContainer .branch-card');
+                                const currentProjectCard = projectCards[projectCards.length - 1];
+                                
+                                // Populate project data
+                                const projectDbIdInput = currentProjectCard.querySelector('.project-id');
+                                const projectNameInput = currentProjectCard.querySelector('input[placeholder*="projet"]');
+                                const projectTypeSelect = currentProjectCard.querySelector('select');
+                                const projectIdInput = currentProjectCard.querySelector('input[placeholder*="PRJ"]');
+                                const progressInput = currentProjectCard.querySelector('input[type="number"]');
+                                const technicianSelect = currentProjectCard.querySelector('.technician-select');
+                                
+                                if (projectDbIdInput && project.id) projectDbIdInput.value = project.id;
+                                if (projectNameInput) projectNameInput.value = `${project.projecttype} - ${project.projectcode}` || `Projet ${index + 1}`;
+                                if (projectTypeSelect) projectTypeSelect.value = project.projecttype || 'extension';
+                                if (projectIdInput) projectIdInput.value = project.projectcode || '';
+                                if (progressInput) progressInput.value = project.projectprogress || 0;
+                                if (technicianSelect) {
+                                    // Set technician by ID
+                                    technicianSelect.value = project.assignedtechnician || 'null';
+                                }
+                            });
+                            
+                            // Update project assignments after all projects and branches are loaded
+                            updateProjectBranchAssignments();
+                            
+                            // Set the assigned establishment dropdown values after options are populated
+                            projects.forEach((project, index) => {
+                                const projectCards = document.querySelectorAll('#projectsContainer .branch-card');
+                                const currentProjectCard = projectCards[index];
+                                
+                                if (currentProjectCard && project.assignedestablishment) {
+                                    const branchSelect = currentProjectCard.querySelector('.branch-select');
+                                    if (branchSelect) {
+                                        // Convert database ID assignment to form position
+                                        let selectValue = 'main'; // default
+                                        
+                                        if (project.assignedestablishment === schoolId) {
+                                            // Assigned to main school
+                                            selectValue = 'main';
+                                        } else {
+                                            // Check if it's a branch ID
+                                            const position = branchIdToPositionMap.get(project.assignedestablishment);
+                                            if (position) {
+                                                selectValue = position;
+                                            } else {
+                                                // Orphaned assignment - branch might have been deleted
+                                                console.warn('Project assigned to unknown establishment:', project.assignedestablishment);
+                                                selectValue = 'main'; // fallback to main
+                                            }
+                                        }
+                                        
+                                        branchSelect.value = selectValue;
+                                    }
+                                }
+                            });
+                        }
 
                     })
+            } else {
+                // New school creation mode (id="null")
+                schoolId = null; // No school ID available yet
+                branchIdToPositionMap.clear();
+                positionToBranchDataMap.clear();
             }
 
             // Set initial state

@@ -1,11 +1,12 @@
 package ma.directionregionale.gestionlettres.dto;
 
+
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class SchoolSaveRequest {
+public class SchoolDetailsResponse {
     private String id;
     private String schoolname;
     private String codegrais;

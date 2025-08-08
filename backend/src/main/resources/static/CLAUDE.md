@@ -41,6 +41,7 @@ This is a **frontend-only web application** for the Moroccan Regional Education 
 - **Embedded Scripts** - All JavaScript is within `<script>` tags in each HTML file
 - **Self-contained files** - Each HTML file is completely independent
 
+
 ### Design System:
 **Moroccan Government Color Palette:**
 - `--primary-red: #C41E3A` (Moroccan flag red)
@@ -110,6 +111,7 @@ This is a **frontend-only web application** for the Moroccan Regional Education 
 - **Event handling** primarily through inline onclick handlers
 - **Form validation** using HTML5 attributes and basic JavaScript
 - **Responsive grids** using CSS Grid with auto-fit/auto-fill
+- **Async consideration** always use .then instead of await
 
 ### File Naming:
 - French names reflecting Moroccan administrative context

@@ -10,10 +10,10 @@ import lombok.Setter;
 
 
 @Entity
-@Table(name="staff")
+@Table(name="technicians")
 @Getter
 @Setter
-public class Staff{
+public class Technician {
     @Id
     private String id;
     private String username;

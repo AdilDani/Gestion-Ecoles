@@ -1,4 +1,4 @@
 package ma.directionregionale.gestionlettres.staff;
 
-public class StaffService {
+public class TechnicianController {
 }

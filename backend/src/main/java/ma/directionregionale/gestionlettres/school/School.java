@@ -1,9 +1,14 @@
 package ma.directionregionale.gestionlettres.school;
 
 import jakarta.persistence.*;
-import lombok.Generated;
 import lombok.Getter;
 import lombok.Setter;
+import ma.directionregionale.gestionlettres.branch.Branch;
+import ma.directionregionale.gestionlettres.dto.BranchRequest;
+import ma.directionregionale.gestionlettres.project.Project;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name="schools")
@@ -25,7 +30,22 @@ public class School {
     private String directorlastname;
     private String educationlevel;
 
-    private Boolean hasBranch;
-    private Boolean hasProject;
+    @OneToMany(mappedBy = "school", cascade = CascadeType.ALL)
+    private List<Project> projects = new ArrayList<>();
+
+    public void addProject(Project project){
+        projects.add(project);
+        project.setSchool(this);
+    }
+
+    @OneToMany(mappedBy = "school", cascade = CascadeType.ALL)
+    private List<Branch> branches = new ArrayList<>();
+
+    public void addBranch(Branch branch){
+        branches.add(branch);
+        branch.setSchool(this);
+    }
+
+
 
 }

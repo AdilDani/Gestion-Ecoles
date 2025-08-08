@@ -2,7 +2,7 @@ package ma.directionregionale.gestionlettres.staff;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface StaffRepository extends JpaRepository<Staff,String> {
+public interface TechnicianRepository extends JpaRepository<Technician,String> {
 }
 
 
