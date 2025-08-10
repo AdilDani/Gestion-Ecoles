@@ -57,6 +57,7 @@ public class CommonMapper {
             projectResponse.setAssignedtechnician(project.getAssignedtechnician());
             projectResponse.setProjecttype(project.getProjecttype());
             projectResponse.setAssignedestablishment(project.getAssignedestablishment());
+            projectResponse.setStatus(project.getStatus());
             projects.add(projectResponse);
         }
     }

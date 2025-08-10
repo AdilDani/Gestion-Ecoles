@@ -20,7 +20,7 @@ public class SchoolController {
     }
 
     @PutMapping
-    public School updateSchool(@RequestBody SchoolRequest request){
+    public SchoolResponse updateSchool(@RequestBody SchoolRequest request){
         return schoolService.updateSchool(request);
     }
 

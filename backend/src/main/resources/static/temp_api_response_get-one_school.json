@@ -1,0 +1,50 @@
+{
+    "schoolDetails": {
+        "id": "20914969-4351-4eda-8748-d330325d1c5a",
+        "schoolname": "Lycee Ibn Al Yassamine",
+        "codegrais": "AC@#!CFF45",
+        "username": "lmoudir.account",
+        "password": "lmoudir.lmodpass",
+        "phonenumber": "0770054344",
+        "region": "TAZA",
+        "numberofstudents": "500",
+        "numberofclassrooms": "20",
+        "directorfirstname": "al",
+        "directorlastname": "moudir",
+        "educationlevel": "lycee",
+        "hasBranch": null,
+        "hasProject": null
+    },
+    "projects": [
+        {
+            "id": "711b7f24-9b12-4fd7-9381-1b7fb417a03c",
+            "projectcode": "PRJ-2024-001",
+            "projectprogress": "90",
+            "assignedtechnician": "null",
+            "projecttype": "extension",
+            "assignedestablishment": "20914969-4351-4eda-8748-d330325d1c5a"
+        },
+        {
+            "id": "6eef3d43-2cf7-4cb3-9fcd-8b37b19a2e88",
+            "projectcode": "PRJ-2024-002",
+            "projectprogress": "50",
+            "assignedtechnician": "123",
+            "projecttype": "renovation",
+            "assignedestablishment": "5fcfd38b-8c6e-44d2-86c8-3032883dbb8e"
+        }
+    ],
+    "branches": [
+        {
+            "id": "5fcfd38b-8c6e-44d2-86c8-3032883dbb8e",
+            "codegrais": null,
+            "branchname": "East",
+            "numberofstudents": "50"
+        },
+        {
+            "id": "7f857864-7c83-4534-b862-0c8ebe3a891b",
+            "codegrais": null,
+            "branchname": "West",
+            "numberofstudents": "40"
+        }
+    ]
+}

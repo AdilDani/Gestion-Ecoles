@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Assignment Logic Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        .result { margin: 10px 0; padding: 5px; }
+        .success { background-color: #d4edda; border-left: 4px solid #28a745; }
+        .error { background-color: #f8d7da; border-left: 4px solid #dc3545; }
+        .info { background-color: #d1ecf1; border-left: 4px solid #17a2b8; }
+        button { margin: 5px; padding: 10px; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        .test-case { border: 1px solid #ddd; margin: 5px 0; padding: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Assignment Logic Test - school_detail_page.html</h1>
+    
+    <div class="test-section">
+        <h2>Issue Analysis</h2>
+        <div class="result info">
+            <strong>Problem:</strong> When loading school data via GET, the <code>assignedestablishment</code> field 
+            defaults to "École Principale" instead of properly mapping to branches.
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test Setup</h2>
+        <button onclick="setupTestData()">Setup Test Data</button>
+        <button onclick="runCurrentLogicTests()">Test Current Logic</button>
+        <button onclick="runFixedLogicTests()">Test Fixed Logic</button>
+        <button onclick="clearResults()">Clear Results</button>
+        <div id="setup-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Current Logic (from school_detail_page.html:2020-2026)</h2>
+        <div id="current-logic-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Fixed Logic Results</h2>
+        <div id="fixed-logic-results"></div>
+    </div>
+
+    <script>
+        // Mock entityManager (simplified version from main file)
+        let entityManager = {
+            tempIdCounter: 0,
+            branches: new Map(),
+            activeProjects: new Map(), 
+            inactiveProjects: new Map(),
+            branchMapping: new Map(),
+            projectMapping: new Map(),
+            
+            generateTempId() {
+                return `temp_${++this.tempIdCounter}_${Date.now()}`;
+            },
+            
+            addBranch(branchData, dbId = null) {
+                const tempId = this.generateTempId();
+                const fullBranchData = {
+                    tempId: tempId,
+                    branchname: branchData.branchname || '',
+                    codegrais: branchData.codegrais || '',
+                    numberofstudents: branchData.numberofstudents || '0'
+                };
+                
+                this.branches.set(tempId, fullBranchData);
+                if (dbId) this.branchMapping.set(tempId, dbId);
+                
+                return tempId;
+            },
+            
+            addProject(projectData, dbId = null, isActive = true) {
+                const tempId = this.generateTempId();
+                const targetMap = isActive ? this.activeProjects : this.inactiveProjects;
+                
+                const fullProjectData = {
+                    tempId: tempId,
+                    projectcode: projectData.projectcode || '',
+                    projectprogress: projectData.projectprogress || '0',
+                    projecttype: projectData.projecttype || 'extension',
+                    assignedestablishment: projectData.assignedestablishment || 'main',
+                    assignedtechnician: projectData.assignedtechnician || 'null',
+                    status: isActive ? 'actif' : 'inactif'
+                };
+                
+                targetMap.set(tempId, fullProjectData);
+                if (dbId) this.projectMapping.set(tempId, dbId);
+                
+                return tempId;
+            },
+            
+            getAllBranches() {
+                return Array.from(this.branches.entries()).map(([tempId, data]) => ({tempId, ...data}));
+            },
+            
+            clear() {
+                this.branches.clear();
+                this.activeProjects.clear(); 
+                this.inactiveProjects.clear();
+                this.branchMapping.clear();
+                this.projectMapping.clear();
+                this.tempIdCounter = 0;
+            }
+        };
+
+        // Test data setup
+        let schoolId = "school_123";
+        let testBranches = [
+            { id: "branch_456", branchname: "Branch Alpha", codegrais: "BR001" },
+            { id: "branch_789", branchname: "Branch Beta", codegrais: "BR002" }
+        ];
+        let testProjects = [
+            { id: "proj_1", projectcode: "PRJ-001", assignedestablishment: "school_123", description: "Assigned to main school" },
+            { id: "proj_2", projectcode: "PRJ-002", assignedestablishment: "branch_456", description: "Assigned to Branch Alpha" },
+            { id: "proj_3", projectcode: "PRJ-003", assignedestablishment: "branch_789", description: "Assigned to Branch Beta" },
+            { id: "proj_4", projectcode: "PRJ-004", assignedestablishment: "main", description: "Assigned to 'main' string" },
+            { id: "proj_5", projectcode: "PRJ-005", assignedestablishment: "nonexistent_999", description: "Assigned to nonexistent branch" },
+            { id: "proj_6", projectcode: "PRJ-006", assignedestablishment: null, description: "Null assignment" },
+            { id: "proj_7", projectcode: "PRJ-007", assignedestablishment: "", description: "Empty assignment" }
+        ];
+
+        function setupTestData() {
+            entityManager.clear();
+            
+            // Add branches to entityManager (simulating GET response processing)
+            testBranches.forEach(branch => {
+                entityManager.addBranch({
+                    branchname: branch.branchname,
+                    codegrais: branch.codegrais,
+                    numberofstudents: "100"
+                }, branch.id);
+            });
+            
+            let html = '<div class="result success"><strong>Test Data Setup:</strong><br>';
+            html += `School ID: ${schoolId}<br>`;
+            html += 'Branches:<br>';
+            entityManager.getAllBranches().forEach(branch => {
+                const dbId = Array.from(entityManager.branchMapping.entries())
+                    .find(([tempId, id]) => tempId === branch.tempId)?.[1];
+                html += `- ${branch.branchname} (TempID: ${branch.tempId}, DbID: ${dbId})<br>`;
+            });
+            html += '<br>Test Projects:<br>';
+            testProjects.forEach(project => {
+                html += `- ${project.projectcode}: assigned to "${project.assignedestablishment}" (${project.description})<br>`;
+            });
+            html += '</div>';
+            
+            document.getElementById('setup-result').innerHTML = html;
+        }
+
+        // CURRENT LOGIC from school_detail_page.html (lines 2020-2026)
+        function currentAssignmentLogic(project) {
+            let assignedEstablishment = 'main';
+            if (project.assignedestablishment && 
+                project.assignedestablishment !== schoolId && 
+                project.assignedestablishment !== 'main') {
+                
+                // Find the branch with this database ID
+                const branchTempId = Array.from(entityManager.branchMapping.entries())
+                    .find(([tempId, dbId]) => dbId === project.assignedestablishment)?.[0];
+                assignedEstablishment = branchTempId || 'main';
+            }
+            
+            return assignedEstablishment;
+        }
+
+        // FIXED LOGIC - properly handles all cases
+        function fixedAssignmentLogic(project) {
+            // Handle null/empty/undefined cases
+            if (!project.assignedestablishment || project.assignedestablishment === '') {
+                return 'main';
+            }
+            
+            // Handle explicit 'main' string
+            if (project.assignedestablishment === 'main') {
+                return 'main';
+            }
+            
+            // Handle assignment to main school (school ID)
+            if (project.assignedestablishment === schoolId) {
+                return 'main';
+            }
+            
+            // Handle assignment to a branch - find by database ID
+            const branchTempId = Array.from(entityManager.branchMapping.entries())
+                .find(([tempId, dbId]) => dbId === project.assignedestablishment)?.[0];
+            
+            if (branchTempId) {
+                return branchTempId;
+            }
+            
+            // Fallback for unrecognized assignments
+            console.warn(`Unrecognized assignedestablishment: ${project.assignedestablishment}, defaulting to 'main'`);
+            return 'main';
+        }
+
+        function runCurrentLogicTests() {
+            let html = '<h3>Current Logic Test Results</h3>';
+            let passCount = 0;
+            
+            testProjects.forEach((project, index) => {
+                const result = currentAssignmentLogic(project);
+                
+                // Determine expected result
+                let expected = 'main';
+                if (project.assignedestablishment === 'branch_456') {
+                    expected = entityManager.getAllBranches().find(b => 
+                        Array.from(entityManager.branchMapping.entries())
+                            .find(([tempId, dbId]) => tempId === b.tempId && dbId === 'branch_456'))?.[0]?.tempId || 'main';
+                } else if (project.assignedestablishment === 'branch_789') {
+                    expected = entityManager.getAllBranches().find(b => 
+                        Array.from(entityManager.branchMapping.entries())
+                            .find(([tempId, dbId]) => tempId === b.tempId && dbId === 'branch_789'))?.[0]?.tempId || 'main';
+                }
+                
+                const pass = result === expected;
+                if (pass) passCount++;
+                
+                html += `
+                    <div class="test-case ${pass ? 'success' : 'error'}">
+                        <strong>Test ${index + 1}: ${project.description}</strong><br>
+                        Input: <code>${project.assignedestablishment}</code><br>
+                        Expected: <code>${expected}</code><br>
+                        Actual: <code>${result}</code><br>
+                        Result: ${pass ? '✅ PASS' : '❌ FAIL'}
+                    </div>
+                `;
+            });
+            
+            html += `<div class="result info"><strong>Current Logic: ${passCount}/${testProjects.length} tests passed</strong></div>`;
+            document.getElementById('current-logic-results').innerHTML = html;
+        }
+
+        function runFixedLogicTests() {
+            let html = '<h3>Fixed Logic Test Results</h3>';
+            let passCount = 0;
+            
+            testProjects.forEach((project, index) => {
+                const result = fixedAssignmentLogic(project);
+                
+                // Determine expected result with fixed logic
+                let expected = 'main';
+                if (project.assignedestablishment === 'branch_456') {
+                    expected = entityManager.getAllBranches().find(b => 
+                        Array.from(entityManager.branchMapping.entries())
+                            .find(([tempId, dbId]) => tempId === b.tempId && dbId === 'branch_456')?.[0] === b.tempId)?.tempId || 'main';
+                } else if (project.assignedestablishment === 'branch_789') {
+                    expected = entityManager.getAllBranches().find(b => 
+                        Array.from(entityManager.branchMapping.entries())
+                            .find(([tempId, dbId]) => tempId === b.tempId && dbId === 'branch_789')?.[0] === b.tempId)?.tempId || 'main';
+                }
+                
+                const pass = result === expected;
+                if (pass) passCount++;
+                
+                html += `
+                    <div class="test-case ${pass ? 'success' : 'error'}">
+                        <strong>Test ${index + 1}: ${project.description}</strong><br>
+                        Input: <code>${project.assignedestablishment}</code><br>
+                        Expected: <code>${expected}</code><br>
+                        Actual: <code>${result}</code><br>
+                        Result: ${pass ? '✅ PASS' : '❌ FAIL'}
+                    </div>
+                `;
+            });
+            
+            html += `<div class="result info"><strong>Fixed Logic: ${passCount}/${testProjects.length} tests passed</strong></div>`;
+            
+            // Show the fix
+            html += `
+                <h3>Recommended Fix</h3>
+                <div class="result info">
+                Replace the assignment logic in <strong>school_detail_page.html:2020-2026</strong> with:
+                <pre>
+// Convert database assignment to temp ID assignment
+let assignedEstablishment = 'main';
+
+// Handle null/empty/undefined cases
+if (!project.assignedestablishment || project.assignedestablishment === '') {
+    assignedEstablishment = 'main';
+} else if (project.assignedestablishment === 'main') {
+    // Handle explicit 'main' string
+    assignedEstablishment = 'main';  
+} else if (project.assignedestablishment === schoolId) {
+    // Handle assignment to main school (school ID)
+    assignedEstablishment = 'main';
+} else {
+    // Handle assignment to a branch - find by database ID
+    const branchTempId = Array.from(entityManager.branchMapping.entries())
+        .find(([tempId, dbId]) => dbId === project.assignedestablishment)?.[0];
+    
+    if (branchTempId) {
+        assignedEstablishment = branchTempId;
+    } else {
+        console.warn(\`Unrecognized assignedestablishment: \${project.assignedestablishment}, defaulting to 'main'\`);
+        assignedEstablishment = 'main';
+    }
+}
+                </pre>
+                </div>
+            `;
+            
+            document.getElementById('fixed-logic-results').innerHTML = html;
+        }
+
+        function clearResults() {
+            document.getElementById('setup-result').innerHTML = '';
+            document.getElementById('current-logic-results').innerHTML = '';
+            document.getElementById('fixed-logic-results').innerHTML = '';
+        }
+
+        // Auto-setup on load
+        window.onload = function() {
+            setupTestData();
+        };
+    </script>
+</body>
+</html>

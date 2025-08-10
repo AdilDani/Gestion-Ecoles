@@ -16,6 +16,7 @@ public class Project {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
+    private String status;
     private String projectcode;
     private String projectprogress;
     private String assignedtechnician;

@@ -1060,21 +1060,45 @@
             const container = document.getElementById('projectsContainer');
             const projectCount = container.children.length + 1;
 
+            // Create project in entityManager first
+            const projectData = {
+                projectcode: `PRJ-2024-${String(projectCount).padStart(3, '0')}`,
+                projectprogress: '0',
+                projecttype: 'extension',
+                assignedestablishment: 'main',
+                assignedtechnician: 'null'
+            };
+            
+            const tempId = entityManager.addProject(projectData, null, true); // null dbId, true for active
+
             const projectCard = document.createElement('div');
             projectCard.className = 'branch-card';
+            projectCard.setAttribute('data-temp-id', tempId); // Store temp ID in DOM
             projectCard.innerHTML = `
                 <input type="hidden" class="project-id" value="null">
+                <input type="hidden" class="project-temp-id" value="${tempId}">
+                <input type="hidden" class="project-status" value="actif">
                 <div class="branch-header">
-                    <input type="text" class="form-input" placeholder="Nom du projet" value="Nouveau Projet ${projectCount}" style="font-weight: 600; margin-bottom: 0.5rem;">
-                    <button type="button" class="btn-danger" onclick="removeProject(this)" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; margin-left: auto;">
-                        🗑️
-                    </button>
+                    <input type="text" class="form-input" placeholder="Nom du projet" value="Nouveau Projet ${projectCount}" style="font-weight: 600; margin-bottom: 0.5rem;" onchange="updateProjectFromDOM(this)">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-left: auto;">
+                        <div class="project-status-toggle" style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="font-size: 0.9rem; color: var(--medium-gray);">Statut:</span>
+                            <label class="toggle-switch" style="width: 45px; height: 22px;">
+                                <input type="checkbox" checked onchange="toggleProjectStatus(this)">
+                                <span class="toggle-slider" style="border-radius: 22px;"></span>
+                            </label>
+                            <span class="status-label" style="font-size: 0.9rem; font-weight: 600; color: var(--success-green);">Actif</span>
+                        </div>
+                        <button type="button" class="btn-danger" onclick="removeProject(this)" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">
+                            🗑️
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="branch-details">
                     <div class="form-group">
                         <label class="form-label">Type de Projet</label>
-                        <select class="form-select">
+                        <select class="form-select" onchange="updateProjectFromDOM(this)">
                             <option value="extension">Extension - Nouvelles Salles</option>
                             <option value="renovation">Rénovation Générale</option>
                             <option value="construction">Construction Neuve</option>
@@ -1085,24 +1109,24 @@
                     
                     <div class="form-group">
                         <label class="form-label">ID Projet</label>
-                        <input type="text" class="form-input" placeholder="Ex: PRJ-2024-001" value="PRJ-2024-${String(projectCount).padStart(3, '0')}">
+                        <input type="text" class="form-input" placeholder="Ex: PRJ-2024-001" value="PRJ-2024-${String(projectCount).padStart(3, '0')}" onchange="updateProjectFromDOM(this)">
                     </div>
                     
                     <div class="form-group">
                         <label class="form-label">Pourcentage d'Achèvement</label>
-                        <input type="number" class="form-input" min="0" max="100" value="0" placeholder="%">
+                        <input type="number" class="form-input" min="0" max="100" value="0" placeholder="%" onchange="updateProjectFromDOM(this)">
                     </div>
                     
                     <div class="form-group project-branch-assignment">
                         <label class="form-label">Assigné à</label>
-                        <select class="form-select branch-select">
+                        <select class="form-select branch-select" onchange="updateProjectFromDOM(this)">
                             <!-- Options will be populated by updateProjectBranchAssignments() -->
                         </select>
                     </div>
                     
                     <div class="form-group">
                         <label class="form-label">Technicien Assigné</label>
-                        <select class="form-select technician-select">
+                        <select class="form-select technician-select" onchange="updateProjectFromDOM(this)">
                             <option value="null">-- Sélectionner un technicien --</option>
                             ${technicianList.map(tech => 
                                 `<option value="${tech.technicianid}">${tech.technicianfirstname} ${tech.technicianlastname}</option>`
@@ -1114,6 +1138,65 @@
 
             container.appendChild(projectCard);
             updateProjectBranchAssignments();
+            console.log('Created project DOM card with tempId:', tempId);
+        }
+        
+        // Helper function to update entityManager from DOM changes
+        function updateProjectFromDOM(element) {
+            const projectCard = element.closest('.branch-card');
+            const tempId = projectCard.getAttribute('data-temp-id');
+            
+            if (!tempId) return;
+            
+            // Collect current DOM values
+            const projectData = {
+                projectcode: projectCard.querySelector('input[placeholder*="PRJ"]')?.value || '',
+                projectprogress: projectCard.querySelector('input[type="number"]')?.value || '0',
+                projecttype: projectCard.querySelector('.form-select:not(.branch-select):not(.technician-select)')?.value || 'extension',
+                assignedestablishment: projectCard.querySelector('.branch-select')?.value || 'main',
+                assignedtechnician: projectCard.querySelector('.technician-select')?.value || 'null'
+            };
+            
+            // Update entityManager
+            entityManager.updateProject(tempId, projectData);
+        }
+
+        function toggleProjectStatus(toggleInput) {
+            const projectCard = toggleInput.closest('.branch-card');
+            const statusLabel = projectCard.querySelector('.status-label');
+            const statusHidden = projectCard.querySelector('.project-status');
+            const tempId = projectCard.getAttribute('data-temp-id');
+            
+            if (!tempId) {
+                console.error('No tempId found for project card');
+                return;
+            }
+            
+            // Update DOM values first
+            updateProjectFromDOM(toggleInput);
+            
+            if (toggleInput.checked) {
+                // Set to active
+                statusHidden.value = 'actif';
+                statusLabel.textContent = currentLanguage === 'ar' ? 'نشط' : 'Actif';
+                statusLabel.style.color = 'var(--success-green)';
+                projectCard.style.display = 'block';
+                
+                // Move to active in entityManager
+                entityManager.moveProjectToActive(tempId);
+            } else {
+                // Set to inactive
+                statusHidden.value = 'inactif';
+                statusLabel.textContent = currentLanguage === 'ar' ? 'غير نشط' : 'Inactif';
+                statusLabel.style.color = 'var(--medium-gray)';
+                
+                // Move to inactive in entityManager
+                entityManager.moveProjectToInactive(tempId);
+                
+                // Hide from UI (both new and fetched projects)
+                projectCard.style.display = 'none';
+            }
+            updateSchoolProjectStatus();
         }
 
         function removeProject(button) {
@@ -1122,7 +1205,26 @@
                 'Êtes-vous sûr de vouloir supprimer ce projet ?';
 
             if (confirm(confirmMsg)) {
-                button.closest('.branch-card').remove();
+                const projectCard = button.closest('.branch-card');
+                const tempId = projectCard.getAttribute('data-temp-id');
+                const projectId = projectCard.querySelector('.project-id').value;
+                
+                if (!tempId) {
+                    console.error('No tempId found for project removal');
+                    return;
+                }
+                
+                if (projectId !== 'null') {
+                    // Fetched project - soft delete (move to inactive in entityManager)
+                    updateProjectFromDOM(button); // Ensure latest data is captured
+                    entityManager.moveProjectToInactive(tempId);
+                } else {
+                    // New project - hard delete from entityManager
+                    entityManager.removeProject(tempId);
+                }
+                
+                // Remove from DOM (both new and fetched projects)
+                projectCard.remove();
                 updateSchoolProjectStatus();
             }
         }
@@ -1138,12 +1240,268 @@
 
         // Enhanced ID tracking system for project assignments
         let schoolId = null; // Main school's database ID
-        let branchIdToPositionMap = new Map(); // Maps branch DB ID -> form position
-        let positionToBranchDataMap = new Map(); // Maps form position -> branch data
         
-        // Global school and branches data for dropdown population
+        // Global school data for reference
         let currentSchoolData = null;
-        let currentBranchesData = null;
+        
+        // Unified Entity Manager with Temporary ID System
+        let entityManager = {
+            tempIdCounter: 0,
+            
+            // Entity Collections with stable temporary IDs
+            branches: new Map(), // tempId -> branchData
+            activeProjects: new Map(), // tempId -> projectData  
+            inactiveProjects: new Map(), // tempId -> projectData
+            
+            // ID Mappings (temp -> database)
+            branchMapping: new Map(), // tempId -> dbId (for fetched branches)
+            projectMapping: new Map(), // tempId -> dbId (for fetched projects)
+            
+            // Generate stable temporary ID
+            generateTempId() {
+                return `temp_${++this.tempIdCounter}_${Date.now()}`;
+            },
+            
+            // Branch Management
+            addBranch(branchData, dbId = null) {
+                const tempId = this.generateTempId();
+                const fullBranchData = {
+                    tempId: tempId,
+                    branchname: branchData.branchname || '',
+                    codegrais: branchData.codegrais || '',
+                    numberofstudents: branchData.numberofstudents || '0'
+                };
+                
+                this.branches.set(tempId, fullBranchData);
+                if (dbId) this.branchMapping.set(tempId, dbId);
+                
+                console.log('Added branch:', tempId, fullBranchData);
+                return tempId;
+            },
+            
+            updateBranch(tempId, branchData) {
+                const existing = this.branches.get(tempId);
+                if (existing) {
+                    this.branches.set(tempId, {...existing, ...branchData});
+                    console.log('Updated branch:', tempId, branchData);
+                    return true;
+                }
+                return false;
+            },
+            
+            removeBranch(tempId) {
+                console.log('Removing branch:', tempId);
+                
+                // Check for dependent projects and reassign them
+                const dependentProjects = this.getDependentProjects(tempId);
+                console.log('Found dependent projects:', dependentProjects);
+                
+                // Reassign dependent projects to main school
+                dependentProjects.forEach(projectTempId => {
+                    const activeProject = this.activeProjects.get(projectTempId);
+                    const inactiveProject = this.inactiveProjects.get(projectTempId);
+                    
+                    if (activeProject) {
+                        activeProject.assignedestablishment = 'main';
+                        console.log('Reassigned active project to main:', projectTempId);
+                    }
+                    if (inactiveProject) {
+                        inactiveProject.assignedestablishment = 'main';
+                        console.log('Reassigned inactive project to main:', projectTempId);
+                    }
+                });
+                
+                this.branches.delete(tempId);
+                this.branchMapping.delete(tempId);
+                return dependentProjects.length;
+            },
+            
+            getBranch(tempId) {
+                return this.branches.get(tempId);
+            },
+            
+            getAllBranches() {
+                return Array.from(this.branches.entries()).map(([tempId, data]) => ({tempId, ...data}));
+            },
+            
+            // Project Management
+            addProject(projectData, dbId = null, isActive = true) {
+                const tempId = this.generateTempId();
+                const targetMap = isActive ? this.activeProjects : this.inactiveProjects;
+                
+                const fullProjectData = {
+                    tempId: tempId,
+                    projectcode: projectData.projectcode || '',
+                    projectprogress: projectData.projectprogress || '0',
+                    projecttype: projectData.projecttype || 'extension',
+                    assignedestablishment: projectData.assignedestablishment || 'main',
+                    assignedtechnician: projectData.assignedtechnician || 'null',
+                    status: isActive ? 'actif' : 'inactif'
+                };
+                
+                targetMap.set(tempId, fullProjectData);
+                if (dbId) this.projectMapping.set(tempId, dbId);
+                
+                console.log('Added project:', tempId, fullProjectData, 'isActive:', isActive);
+                return tempId;
+            },
+            
+            updateProject(tempId, projectData) {
+                const activeProject = this.activeProjects.get(tempId);
+                const inactiveProject = this.inactiveProjects.get(tempId);
+                
+                if (activeProject) {
+                    this.activeProjects.set(tempId, {...activeProject, ...projectData});
+                    console.log('Updated active project:', tempId, projectData);
+                    return true;
+                } else if (inactiveProject) {
+                    // Inactive projects should not be modified, but we log this attempt
+                    console.warn('Attempted to modify inactive project - this should not happen:', tempId);
+                    return false;
+                }
+                return false;
+            },
+            
+            moveProjectToInactive(tempId) {
+                const project = this.activeProjects.get(tempId);
+                if (project) {
+                    project.status = 'inactif';
+                    this.inactiveProjects.set(tempId, project);
+                    this.activeProjects.delete(tempId);
+                    console.log('Moved project to inactive:', tempId);
+                    return true;
+                }
+                return false;
+            },
+            
+            moveProjectToActive(tempId) {
+                const project = this.inactiveProjects.get(tempId);
+                if (project) {
+                    project.status = 'actif';
+                    this.activeProjects.set(tempId, project);
+                    this.inactiveProjects.delete(tempId);
+                    console.log('Moved project to active:', tempId);
+                    return true;
+                }
+                return false;
+            },
+            
+            removeProject(tempId) {
+                const wasActive = this.activeProjects.delete(tempId);
+                const wasInactive = this.inactiveProjects.delete(tempId);
+                this.projectMapping.delete(tempId);
+                
+                console.log('Removed project:', tempId, 'wasActive:', wasActive, 'wasInactive:', wasInactive);
+                return wasActive || wasInactive;
+            },
+            
+            getProject(tempId) {
+                return this.activeProjects.get(tempId) || this.inactiveProjects.get(tempId);
+            },
+            
+            getAllActiveProjects() {
+                return Array.from(this.activeProjects.entries()).map(([tempId, data]) => ({tempId, ...data}));
+            },
+            
+            getAllInactiveProjects() {
+                return Array.from(this.inactiveProjects.entries()).map(([tempId, data]) => ({tempId, ...data}));
+            },
+            
+            // Find projects dependent on a branch
+            getDependentProjects(branchTempId) {
+                const dependent = [];
+                
+                [...this.activeProjects.keys(), ...this.inactiveProjects.keys()].forEach(projectTempId => {
+                    const project = this.activeProjects.get(projectTempId) || 
+                                   this.inactiveProjects.get(projectTempId);
+                    if (project?.assignedestablishment === branchTempId) {
+                        dependent.push(projectTempId);
+                    }
+                });
+                
+                return dependent;
+            },
+            
+            // Get branch position in current array (for backend conversion)
+            getBranchPosition(branchTempId) {
+                const branches = this.getAllBranches();
+                const index = branches.findIndex(b => b.tempId === branchTempId);
+                return index >= 0 ? (index + 1).toString() : null;
+            },
+            
+            // Convert assignment reference for backend compatibility
+            convertAssignmentForBackend(projectTempId) {
+                const project = this.getProject(projectTempId);
+                if (!project) return 'main';
+                
+                if (project.assignedestablishment === 'main') {
+                    return 'main';
+                }
+                
+                // Check if it's a branch temp ID
+                const branch = this.getBranch(project.assignedestablishment);
+                if (branch) {
+                    // If branch has DB ID, use it; otherwise use position
+                    const dbId = this.branchMapping.get(project.assignedestablishment);
+                    if (dbId) {
+                        return dbId;
+                    } else {
+                        return this.getBranchPosition(project.assignedestablishment) || 'main';
+                    }
+                }
+                
+                return 'main'; // Fallback
+            },
+            
+            // Convert to database format for saving
+            prepareForSave() {
+                console.log('Preparing data for save...');
+                
+                const branches = [];
+                const projects = [];
+                
+                // Process branches
+                this.branches.forEach((branch, tempId) => {
+                    const dbId = this.branchMapping.get(tempId);
+                    branches.push({
+                        id: dbId || 'null',
+                        branchname: branch.branchname,
+                        codegrais: branch.codegrais,
+                        numberofstudents: branch.numberofstudents
+                    });
+                });
+                
+                // Process projects (both active and inactive)
+                [...this.activeProjects.entries(), ...this.inactiveProjects.entries()].forEach(([tempId, project]) => {
+                    const dbId = this.projectMapping.get(tempId);
+                    const assignedEstablishment = this.convertAssignmentForBackend(tempId);
+                    
+                    projects.push({
+                        id: dbId || 'null',
+                        projectcode: project.projectcode,
+                        projectprogress: project.projectprogress,
+                        projecttype: project.projecttype,
+                        assignedestablishment: assignedEstablishment,
+                        assignedtechnician: project.assignedtechnician,
+                        status: project.status
+                    });
+                });
+                
+                console.log('Prepared data:', { branches, projects });
+                return { branches, projects };
+            },
+            
+            // Clear all data
+            clear() {
+                this.branches.clear();
+                this.activeProjects.clear();
+                this.inactiveProjects.clear();
+                this.branchMapping.clear();
+                this.projectMapping.clear();
+                this.tempIdCounter = 0;
+                console.log('EntityManager cleared');
+            }
+        };
 
         // Language switching functionality with persistence
         let currentLanguage = localStorage.getItem('selectedLanguage') || 'fr';
@@ -1169,6 +1527,18 @@
                 const text = element.getAttribute(`data-${lang}`);
                 if (text) {
                     element.textContent = text;
+                }
+            });
+            
+            // Update project status labels
+            document.querySelectorAll('.status-label').forEach(label => {
+                const toggle = label.closest('.project-status-toggle').querySelector('input[type="checkbox"]');
+                if (toggle) {
+                    if (toggle.checked) {
+                        label.textContent = lang === 'ar' ? 'نشط' : 'Actif';
+                    } else {
+                        label.textContent = lang === 'ar' ? 'غير نشط' : 'Inactif';
+                    }
                 }
             });
 
@@ -1198,53 +1568,31 @@
             });
             const educationLevel = educationLevels.join('_');
 
-            // Collect branches data
-            const branches = [];
-            if (document.getElementById('branchesToggle').checked) {
-                const branchCards = document.querySelectorAll('#branchesContainer .branch-card');
-                branchCards.forEach(card => {
-                    const branchNameInput = card.querySelector('input[placeholder*="branche"]');
-                    const codeGraisInput = card.querySelector('input[placeholder*="Code"]');
-                    const studentsInput = card.querySelector('input[type="number"]');
-                    
-                    const branch = {
-                        id: card.querySelector('.branch-id').value,
-                        branchname: branchNameInput ? branchNameInput.value.trim() : '',
-                        codegrais: codeGraisInput ? codeGraisInput.value.trim() : '',
-                        numberofstudents: studentsInput ? studentsInput.value.toString() : '0'
-                    };
-                    
-                    branches.push(branch);
-                });
-            }
+            // Update entityManager with latest DOM data before saving
+            // Update all visible branches
+            const branchCards = document.querySelectorAll('#branchesContainer .branch-card');
+            branchCards.forEach(card => {
+                const tempId = card.getAttribute('data-temp-id');
+                if (tempId) {
+                    updateBranchFromDOM(card.querySelector('input'));
+                }
+            });
+            
+            // Update all visible projects
+            const projectCards = document.querySelectorAll('#projectsContainer .branch-card:not([style*="display: none"])');
+            projectCards.forEach(card => {
+                const tempId = card.getAttribute('data-temp-id');
+                if (tempId) {
+                    updateProjectFromDOM(card.querySelector('input'));
+                }
+            });
 
-            // Collect projects data
-            const projects = [];
-            if (document.getElementById('projectToggle').checked) {
-                const projectCards = document.querySelectorAll('#projectsContainer .branch-card');
-                projectCards.forEach(card => {
-                    const projectNameInput = card.querySelector('input[placeholder*="projet"]');
-                    const projectTypeSelect = card.querySelector('select');
-                    const projectIdInput = card.querySelector('input[placeholder*="PRJ"]');
-                    const progressInput = card.querySelector('input[type="number"]');
-                    const technicianSelect = card.querySelector('.technician-select');
-                    
-                    const project = {
-                        id: card.querySelector('.project-id').value,
-                        projectcode: projectIdInput ? projectIdInput.value.trim() : '',
-                        projectprogress: progressInput ? progressInput.value : '0',
-                        projecttype: projectTypeSelect ? projectTypeSelect.value : 'extension',
-                        assignedestablishment: card.querySelector('.branch-select').value // 'main' or positional string
-                    };
-                    
-                    // Handle technician assignment
-                    const technicianValue = technicianSelect ? technicianSelect.value : 'null';
-                    project.assignedtechnician = technicianValue;
-                    
-                    
-                    projects.push(project);
-                });
-            }
+            // Get prepared data from entityManager
+            const preparedData = entityManager.prepareForSave();
+            
+            // Use entityManager data if toggles are checked, otherwise empty arrays
+            const branches = document.getElementById('branchesToggle').checked ? preparedData.branches : [];
+            const projects = document.getElementById('projectToggle').checked ? preparedData.projects : [];
 
             // Collect form data
             const schoolData = {
@@ -1285,15 +1633,28 @@
                     body: JSON.stringify(schoolData)
                 })
                     .then(response => {
+                        console.log('POST Response status:', response.status);
+                        console.log('POST Response:', response);
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
                         return response.json();
                     })
                     .then(data => {
+                        console.log('POST Success data:', data);
                         const message = currentLanguage === 'ar' ?
                             'تم تحديث المدرسة بنجاح!' :
                             'École mise à jour avec succès!';
                         alert(message);
                         window.location.href = 'admin_school_dashboard.html';
                     })
+                    .catch(error => {
+                        console.error('POST Error:', error);
+                        const errorMessage = currentLanguage === 'ar' ?
+                            'حدث خطأ أثناء حفظ المدرسة!' :
+                            'Erreur lors de la sauvegarde de l\'école!';
+                        alert(errorMessage);
+                    });
 
 
 
@@ -1369,12 +1730,23 @@
             const container = document.getElementById('branchesContainer');
             const branchCount = container.children.length + 1;
 
+            // Create branch in entityManager first
+            const branchData = {
+                branchname: `Nouvelle Branche ${branchCount}`,
+                codegrais: '',
+                numberofstudents: '0'
+            };
+            
+            const tempId = entityManager.addBranch(branchData, null); // null for dbId since it's new
+
             const branchCard = document.createElement('div');
             branchCard.className = 'branch-card';
+            branchCard.setAttribute('data-temp-id', tempId); // Store temp ID in DOM
             branchCard.innerHTML = `
                 <input type="hidden" class="branch-id" value="null">
+                <input type="hidden" class="branch-temp-id" value="${tempId}">
                 <div class="branch-header">
-                    <input type="text" class="form-input" placeholder="Nom de la branche" value="Nouvelle Branche ${branchCount}" style="font-weight: 600; margin-bottom: 0.5rem;">
+                    <input type="text" class="form-input" placeholder="Nom de la branche" value="Nouvelle Branche ${branchCount}" style="font-weight: 600; margin-bottom: 0.5rem;" onchange="updateBranchFromDOM(this)">
                     <button type="button" class="btn-danger" onclick="removeBranch(this)" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; margin-left: auto;">
                         🗑️
                     </button>
@@ -1383,18 +1755,37 @@
                 <div class="branch-details">
                     <div class="form-group">
                         <label class="form-label">Code Grais</label>
-                        <input type="text" class="form-input" placeholder="Code identifiant">
+                        <input type="text" class="form-input" placeholder="Code identifiant" onchange="updateBranchFromDOM(this)">
                     </div>
                     
                     <div class="form-group">
                         <label class="form-label">Nombre d'Élèves</label>
-                        <input type="number" class="form-input" value="0">
+                        <input type="number" class="form-input" value="0" onchange="updateBranchFromDOM(this)">
                     </div>
                 </div>
             `;
 
             container.appendChild(branchCard);
             updateProjectBranchAssignments();
+            console.log('Created branch DOM card with tempId:', tempId);
+        }
+        
+        // Helper function to update entityManager from branch DOM changes
+        function updateBranchFromDOM(element) {
+            const branchCard = element.closest('.branch-card');
+            const tempId = branchCard.getAttribute('data-temp-id');
+            
+            if (!tempId) return;
+            
+            // Collect current DOM values
+            const branchData = {
+                branchname: branchCard.querySelector('input[placeholder*="branche"]')?.value || '',
+                codegrais: branchCard.querySelector('input[placeholder*="Code"]')?.value || '',
+                numberofstudents: branchCard.querySelector('input[type="number"]')?.value || '0'
+            };
+            
+            // Update entityManager
+            entityManager.updateBranch(tempId, branchData);
         }
 
         function removeBranch(button) {
@@ -1403,103 +1794,87 @@
                 'Êtes-vous sûr de vouloir supprimer cette branche ?';
 
             if (confirm(confirmMsg)) {
-                button.closest('.branch-card').remove();
-                rebuildBranchPositionMaps();
+                const branchCard = button.closest('.branch-card');
+                const tempId = branchCard.getAttribute('data-temp-id');
+                
+                if (!tempId) {
+                    console.error('No tempId found for branch removal');
+                    return;
+                }
+                
+                // Update branch data before removing (in case there were unsaved changes)
+                updateBranchFromDOM(button);
+                
+                // Remove from entityManager (this also handles dependent project reassignment)
+                const dependentCount = entityManager.removeBranch(tempId);
+                
+                if (dependentCount > 0) {
+                    const reassignMsg = currentLanguage === 'ar' ?
+                        `تم إعادة تعيين ${dependentCount} مشروع إلى المدرسة الرئيسية` :
+                        `${dependentCount} projet(s) ont été réassigné(s) à l'école principale`;
+                    console.log(reassignMsg);
+                    // Optionally show user notification
+                }
+                
+                // Remove from DOM
+                branchCard.remove();
+                
+                // Update UI
                 updateProjectBranchAssignments();
-                validateProjectAssignments();
                 updateSchoolProjectStatus();
             }
-        }
-
-        // Rebuild branch position mappings after DOM changes
-        function rebuildBranchPositionMaps() {
-            branchIdToPositionMap.clear();
-            positionToBranchDataMap.clear();
-            
-            const branchCards = document.querySelectorAll('#branchesContainer .branch-card');
-            branchCards.forEach((card, index) => {
-                const branchIdInput = card.querySelector('.branch-id');
-                const branchNameInput = card.querySelector('input[placeholder*="branche"]');
-                const branchId = branchIdInput ? branchIdInput.value : null;
-                const position = (index + 1).toString();
-                
-                if (branchId && branchId !== 'null') {
-                    branchIdToPositionMap.set(branchId, position);
-                    positionToBranchDataMap.set(position, {
-                        id: branchId,
-                        name: branchNameInput ? branchNameInput.value : `Branche ${index + 1}`
-                    });
-                }
-            });
-        }
-
-        // Validate and fix orphaned project assignments
-        function validateProjectAssignments() {
-            const projectCards = document.querySelectorAll('#projectsContainer .branch-card');
-            projectCards.forEach(card => {
-                const branchSelect = card.querySelector('.branch-select');
-                const currentValue = branchSelect.value;
-                
-                // Check if current selection is still valid
-                if (currentValue !== 'main') {
-                    // Check if position still exists
-                    const branchCards = document.querySelectorAll('#branchesContainer .branch-card');
-                    const positionExists = Array.from(branchCards).some((_, index) => 
-                        (index + 1).toString() === currentValue
-                    );
-                    
-                    if (!positionExists) {
-                        // Reset to main if invalid
-                        branchSelect.value = 'main';
-                        console.warn('Reset orphaned project assignment to main school');
-                    }
-                }
-            });
         }
 
         // Debug helper function
         function debugAssignmentState() {
             console.log('School ID:', schoolId);
-            console.log('Branch ID to Position Map:', branchIdToPositionMap);
-            console.log('Position to Branch Data Map:', positionToBranchDataMap);
+            console.log('EntityManager state:', {
+                branches: entityManager.getAllBranches(),
+                activeProjects: entityManager.getAllActiveProjects(),
+                inactiveProjects: entityManager.getAllInactiveProjects()
+            });
         }
 
-        // Update project branch assignment dropdowns using form state
+        // Update project branch assignment dropdowns using entityManager
         function updateProjectBranchAssignments() {
-            const projectCards = document.querySelectorAll('#projectsContainer .branch-card');
-            const branchCards = document.querySelectorAll('#branchesContainer .branch-card');
+            const projectCards = document.querySelectorAll('#projectsContainer .branch-card:not([style*="display: none"])');
+            const branches = entityManager.getAllBranches();
 
             projectCards.forEach(projectCard => {
                 const branchSelect = projectCard.querySelector('.branch-select');
-
+                const projectTempId = projectCard.getAttribute('data-temp-id');
+                
                 // Store current selection before clearing
                 const currentValue = branchSelect.value;
 
                 // Clear existing options
                 branchSelect.innerHTML = '';
 
-                // Add main school option (always use 'main' as value for form)
+                // Add main school option
                 const mainOption = document.createElement('option');
                 mainOption.value = 'main';
                 mainOption.textContent = currentLanguage === 'ar' ? 'المدرسة الرئيسية' : 'École Principale';
                 branchSelect.appendChild(mainOption);
 
-                // Add branch options using form positions
-                branchCards.forEach((branchCard, index) => {
-                    const branchNameInput = branchCard.querySelector('input[placeholder*="branche"]');
-                    const branchName = branchNameInput ? branchNameInput.value.trim() : '';
-                    const displayName = branchName || `Branche ${index + 1}`;
-                    const position = (index + 1).toString();
-                    
+                // Add branch options using temp IDs
+                branches.forEach((branch) => {
                     const branchOption = document.createElement('option');
-                    branchOption.value = position; // Use position as value
-                    branchOption.textContent = displayName;
+                    branchOption.value = branch.tempId; // Use tempId as value
+                    branchOption.textContent = branch.branchname || `Branche ${branch.tempId}`;
                     branchSelect.appendChild(branchOption);
                 });
 
                 // Restore previous selection if it still exists
                 if (currentValue && [...branchSelect.options].some(option => option.value === currentValue)) {
                     branchSelect.value = currentValue;
+                    // Update entityManager with current selection
+                    if (projectTempId) {
+                        updateProjectFromDOM(branchSelect);
+                    }
+                } else if (projectTempId) {
+                    // Don't set default value here - let the final assignment logic handle it
+                    // This prevents overwriting the correct assignment from entityManager
+                    console.log('  -> Skipping default assignment, will be set by final dropdown logic');
                 }
             });
         }
@@ -1508,10 +1883,10 @@
             const projectToggle = document.getElementById('projectToggle');
             const projectBadge = document.getElementById('projectBadge');
 
-            // Check if school has projects
+            // Check if school has active projects (only count visible ones)
             let projectCount = 0;
             if (projectToggle.checked) {
-                const projectCards = document.querySelectorAll('#projectsContainer .branch-card');
+                const projectCards = document.querySelectorAll('#projectsContainer .branch-card:not([style*="display: none"])');
                 projectCount = projectCards.length;
             }
 
@@ -1635,18 +2010,72 @@
                         
                         // Initialize ID tracking system
                         schoolId = school.id;
-                        branchIdToPositionMap.clear();
-                        positionToBranchDataMap.clear();
                         
-                        // Build branch position mapping
-                        branches.forEach((branch, index) => {
-                            const position = (index + 1).toString();
-                            branchIdToPositionMap.set(branch.id, position);
-                            positionToBranchDataMap.set(position, branch);
+                        // Clear and populate entityManager with fetched data
+                        entityManager.clear();
+                        
+                        // Populate branches with database IDs
+                        branches.forEach(branch => {
+                            const tempId = entityManager.addBranch({
+                                branchname: branch.branchname || '',
+                                codegrais: branch.codegrais || '',
+                                numberofstudents: branch.numberofstudents || '0'
+                            }, branch.id); // Pass database ID for mapping
+                            
+                            console.log('Loaded branch from DB:', tempId, branch);
                         });
                         
-                        // Calculate total students (main school + branches)
-                        const branchStudents = branches.reduce((sum, branch) => sum + parseInt(branch.numberofstudents || 0), 0);
+                        // Populate projects with database IDs, separated by status
+                        projects.forEach(project => {
+                            const isActive = (project.status || 'actif') === 'actif';
+                            
+                            // Convert database assignment to temp ID assignment  
+                            let assignedEstablishment = 'main';
+
+                            // Handle null/empty/undefined cases
+                            if (!project.assignedestablishment || project.assignedestablishment === '') {
+                                assignedEstablishment = 'main';
+                            } else if (project.assignedestablishment === 'main') {
+                                // Handle explicit 'main' string
+                                assignedEstablishment = 'main';  
+                            } else if (project.assignedestablishment === schoolId || 
+                                       project.assignedestablishment === String(schoolId)) {
+                                // Handle assignment to main school (school ID) - check both string and number
+                                assignedEstablishment = 'main';
+                            } else {
+                                // Handle assignment to a branch - find by database ID
+                                const branchTempId = Array.from(entityManager.branchMapping.entries())
+                                    .find(([tempId, dbId]) => dbId === project.assignedestablishment || 
+                                           dbId === String(project.assignedestablishment))?.[0];
+                                
+                                if (branchTempId) {
+                                    assignedEstablishment = branchTempId;
+                                } else {
+                                    console.warn(`Unrecognized assignedestablishment: ${project.assignedestablishment}, defaulting to 'main'`);
+                                    assignedEstablishment = 'main';
+                                }
+                            }
+                            
+                            const tempId = entityManager.addProject({
+                                projectcode: project.projectcode || '',
+                                projectprogress: project.projectprogress || '0',
+                                projecttype: project.projecttype || 'extension',
+                                assignedestablishment: assignedEstablishment,
+                                assignedtechnician: project.assignedtechnician || 'null'
+                            }, project.id, isActive); // Pass database ID and active status
+                            
+                            console.log(`Loaded project ${project.projectcode}: ${project.assignedestablishment} -> ${assignedEstablishment}`);
+                        });
+                        
+                        console.log('EntityManager populated with:', {
+                            branches: entityManager.getAllBranches().length,
+                            activeProjects: entityManager.getAllActiveProjects().length,
+                            inactiveProjects: entityManager.getAllInactiveProjects().length
+                        });
+                        
+                        // Calculate total students using entityManager data
+                        const allBranches = entityManager.getAllBranches();
+                        const branchStudents = allBranches.reduce((sum, branch) => sum + parseInt(branch.numberofstudents || 0), 0);
                         const totalStudents = parseInt(school.numberofstudents || 0) + branchStudents;
                         
                         // Update stat display and school name
@@ -1687,9 +2116,9 @@
                             }
                         }
 
-                        // Set toggles based on array lengths and populate existing data
-                        const hasBranches = branches.length > 0;
-                        const hasProjects = projects.length > 0;
+                        // Set toggles based on entityManager data
+                        const hasBranches = entityManager.getAllBranches().length > 0;
+                        const hasProjects = entityManager.getAllActiveProjects().length > 0; // Only count active projects for toggle
                         
                         document.getElementById('branchesToggle').checked = hasBranches;
                         toggleBranches();
@@ -1697,82 +2126,153 @@
                         document.getElementById('projectToggle').checked = hasProjects;
                         toggleProjects();
                         
-                        // Populate existing branches
+                        // Populate existing branches from entityManager
                         if (hasBranches) {
-                            branches.forEach((branch, index) => {
-                                addBranch();
-                                const branchCards = document.querySelectorAll('#branchesContainer .branch-card');
-                                const currentBranchCard = branchCards[branchCards.length - 1];
+                            const branchesFromManager = entityManager.getAllBranches();
+                            branchesFromManager.forEach((branch, index) => {
+                                // Create DOM card with entityManager data
+                                const container = document.getElementById('branchesContainer');
+                                const branchCard = document.createElement('div');
+                                branchCard.className = 'branch-card';
+                                branchCard.setAttribute('data-temp-id', branch.tempId);
                                 
-                                // Populate branch data
-                                const branchIdInput = currentBranchCard.querySelector('.branch-id');
-                                const branchNameInput = currentBranchCard.querySelector('input[placeholder*="branche"]');
-                                const codeGraisInput = currentBranchCard.querySelector('input[placeholder*="Code"]');
-                                const studentsInput = currentBranchCard.querySelector('input[type="number"]');
+                                // Get database ID if it exists
+                                const dbId = entityManager.branchMapping.get(branch.tempId) || 'null';
                                 
-                                if (branchIdInput && branch.id) branchIdInput.value = branch.id;
-                                if (branchNameInput) branchNameInput.value = branch.branchname || `Branche ${index + 1}`;
-                                if (codeGraisInput) codeGraisInput.value = branch.codegrais || '';
-                                if (studentsInput) studentsInput.value = branch.numberofstudents || 0;
+                                branchCard.innerHTML = `
+                                    <input type="hidden" class="branch-id" value="${dbId}">
+                                    <input type="hidden" class="branch-temp-id" value="${branch.tempId}">
+                                    <div class="branch-header">
+                                        <input type="text" class="form-input" placeholder="Nom de la branche" value="${branch.branchname}" style="font-weight: 600; margin-bottom: 0.5rem;" onchange="updateBranchFromDOM(this)">
+                                        <button type="button" class="btn-danger" onclick="removeBranch(this)" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; margin-left: auto;">
+                                            🗑️
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="branch-details">
+                                        <div class="form-group">
+                                            <label class="form-label">Code Grais</label>
+                                            <input type="text" class="form-input" placeholder="Code identifiant" value="${branch.codegrais}" onchange="updateBranchFromDOM(this)">
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label class="form-label">Nombre d'Élèves</label>
+                                            <input type="number" class="form-input" value="${branch.numberofstudents}" onchange="updateBranchFromDOM(this)">
+                                        </div>
+                                    </div>
+                                `;
+                                
+                                container.appendChild(branchCard);
+                                console.log('Rendered branch DOM card:', branch.tempId, branch);
                             });
                         }
                         
-                        // Populate existing projects
+                        // Populate existing active projects from entityManager (inactive projects stay in entityManager only)
                         if (hasProjects) {
-                            projects.forEach((project, index) => {
-                                addProject();
-                                const projectCards = document.querySelectorAll('#projectsContainer .branch-card');
-                                const currentProjectCard = projectCards[projectCards.length - 1];
+                            const activeProjectsFromManager = entityManager.getAllActiveProjects();
+                            activeProjectsFromManager.forEach((project, index) => {
+                                // Create DOM card with entityManager data
+                                const container = document.getElementById('projectsContainer');
+                                const projectCard = document.createElement('div');
+                                projectCard.className = 'branch-card';
+                                projectCard.setAttribute('data-temp-id', project.tempId);
                                 
-                                // Populate project data
-                                const projectDbIdInput = currentProjectCard.querySelector('.project-id');
-                                const projectNameInput = currentProjectCard.querySelector('input[placeholder*="projet"]');
-                                const projectTypeSelect = currentProjectCard.querySelector('select');
-                                const projectIdInput = currentProjectCard.querySelector('input[placeholder*="PRJ"]');
-                                const progressInput = currentProjectCard.querySelector('input[type="number"]');
-                                const technicianSelect = currentProjectCard.querySelector('.technician-select');
+                                // Get database ID if it exists
+                                const dbId = entityManager.projectMapping.get(project.tempId) || 'null';
+                                const isActive = project.status === 'actif';
                                 
-                                if (projectDbIdInput && project.id) projectDbIdInput.value = project.id;
-                                if (projectNameInput) projectNameInput.value = `${project.projecttype} - ${project.projectcode}` || `Projet ${index + 1}`;
-                                if (projectTypeSelect) projectTypeSelect.value = project.projecttype || 'extension';
-                                if (projectIdInput) projectIdInput.value = project.projectcode || '';
-                                if (progressInput) progressInput.value = project.projectprogress || 0;
-                                if (technicianSelect) {
-                                    // Set technician by ID
-                                    technicianSelect.value = project.assignedtechnician || 'null';
-                                }
+                                projectCard.innerHTML = `
+                                    <input type="hidden" class="project-id" value="${dbId}">
+                                    <input type="hidden" class="project-temp-id" value="${project.tempId}">
+                                    <input type="hidden" class="project-status" value="${project.status}">
+                                    <div class="branch-header">
+                                        <input type="text" class="form-input" placeholder="Nom du projet" value="${project.projecttype} - ${project.projectcode}" style="font-weight: 600; margin-bottom: 0.5rem;" onchange="updateProjectFromDOM(this)">
+                                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-left: auto;">
+                                            <div class="project-status-toggle" style="display: flex; align-items: center; gap: 0.5rem;">
+                                                <span style="font-size: 0.9rem; color: var(--medium-gray);">Statut:</span>
+                                                <label class="toggle-switch" style="width: 45px; height: 22px;">
+                                                    <input type="checkbox" ${isActive ? 'checked' : ''} onchange="toggleProjectStatus(this)">
+                                                    <span class="toggle-slider" style="border-radius: 22px;"></span>
+                                                </label>
+                                                <span class="status-label" style="font-size: 0.9rem; font-weight: 600; color: ${isActive ? 'var(--success-green)' : 'var(--medium-gray)'};">
+                                                    ${isActive ? (currentLanguage === 'ar' ? 'نشط' : 'Actif') : (currentLanguage === 'ar' ? 'غير نشط' : 'Inactif')}
+                                                </span>
+                                            </div>
+                                            <button type="button" class="btn-danger" onclick="removeProject(this)" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">
+                                                🗑️
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="branch-details">
+                                        <div class="form-group">
+                                            <label class="form-label">Type de Projet</label>
+                                            <select class="form-select" onchange="updateProjectFromDOM(this)">
+                                                <option value="extension" ${project.projecttype === 'extension' ? 'selected' : ''}>Extension - Nouvelles Salles</option>
+                                                <option value="renovation" ${project.projecttype === 'renovation' ? 'selected' : ''}>Rénovation Générale</option>
+                                                <option value="construction" ${project.projecttype === 'construction' ? 'selected' : ''}>Construction Neuve</option>
+                                                <option value="infrastructure" ${project.projecttype === 'infrastructure' ? 'selected' : ''}>Infrastructure (Sanitaires, Électricité)</option>
+                                                <option value="equipment" ${project.projecttype === 'equipment' ? 'selected' : ''}>Équipement et Mobilier</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label class="form-label">ID Projet</label>
+                                            <input type="text" class="form-input" placeholder="Ex: PRJ-2024-001" value="${project.projectcode}" onchange="updateProjectFromDOM(this)">
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label class="form-label">Pourcentage d'Achèvement</label>
+                                            <input type="number" class="form-input" min="0" max="100" value="${project.projectprogress}" placeholder="%" onchange="updateProjectFromDOM(this)">
+                                        </div>
+                                        
+                                        <div class="form-group project-branch-assignment">
+                                            <label class="form-label">Assigné à</label>
+                                            <select class="form-select branch-select" onchange="updateProjectFromDOM(this)">
+                                                <!-- Options will be populated by updateProjectBranchAssignments() -->
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label class="form-label">Technicien Assigné</label>
+                                            <select class="form-select technician-select" onchange="updateProjectFromDOM(this)">
+                                                <option value="null">-- Sélectionner un technicien --</option>
+                                                ${technicianList.map(tech => 
+                                                    `<option value="${tech.technicianid}" ${project.assignedtechnician === tech.technicianid ? 'selected' : ''}>${tech.technicianfirstname} ${tech.technicianlastname}</option>`
+                                                ).join('')}
+                                            </select>
+                                        </div>
+                                    </div>
+                                `;
+                                
+                                container.appendChild(projectCard);
+                                console.log('Rendered project DOM card:', project.tempId, project);
                             });
                             
                             // Update project assignments after all projects and branches are loaded
                             updateProjectBranchAssignments();
                             
-                            // Set the assigned establishment dropdown values after options are populated
-                            projects.forEach((project, index) => {
-                                const projectCards = document.querySelectorAll('#projectsContainer .branch-card');
-                                const currentProjectCard = projectCards[index];
+                            // Set the assigned establishment dropdown values from entityManager data
+                            const projectCards = document.querySelectorAll('#projectsContainer .branch-card');
+                            
+                            projectCards.forEach(projectCard => {
+                                const projectTempId = projectCard.getAttribute('data-temp-id');
+                                const project = entityManager.getProject(projectTempId);
+                                const branchSelect = projectCard.querySelector('.branch-select');
                                 
-                                if (currentProjectCard && project.assignedestablishment) {
-                                    const branchSelect = currentProjectCard.querySelector('.branch-select');
-                                    if (branchSelect) {
-                                        // Convert database ID assignment to form position
-                                        let selectValue = 'main'; // default
-                                        
-                                        if (project.assignedestablishment === schoolId) {
-                                            // Assigned to main school
-                                            selectValue = 'main';
-                                        } else {
-                                            // Check if it's a branch ID
-                                            const position = branchIdToPositionMap.get(project.assignedestablishment);
-                                            if (position) {
-                                                selectValue = position;
-                                            } else {
-                                                // Orphaned assignment - branch might have been deleted
-                                                console.warn('Project assigned to unknown establishment:', project.assignedestablishment);
-                                                selectValue = 'main'; // fallback to main
-                                            }
-                                        }
-                                        
-                                        branchSelect.value = selectValue;
+                                if (project && branchSelect) {
+                                    // Set the dropdown to the temp ID assignment
+                                    const options = [...branchSelect.options];
+                                    const hasOption = options.some(option => option.value === project.assignedestablishment);
+                                    
+                                    if (hasOption) {
+                                        branchSelect.value = project.assignedestablishment;
+                                        console.log(`Project ${project.projectcode} assigned to: ${project.assignedestablishment}`);
+                                    } else {
+                                        branchSelect.value = 'main'; // fallback
+                                        // Update entityManager with fallback
+                                        entityManager.updateProject(projectTempId, { assignedestablishment: 'main' });
+                                        console.warn(`Project ${project.projectcode} assignment ${project.assignedestablishment} not found, defaulted to main`);
                                     }
                                 }
                             });
@@ -1782,8 +2282,8 @@
             } else {
                 // New school creation mode (id="null")
                 schoolId = null; // No school ID available yet
-                branchIdToPositionMap.clear();
-                positionToBranchDataMap.clear();
+                entityManager.clear(); // Clear entityManager for new school
+                console.log('New school mode - entityManager cleared');
             }
 
             // Set initial state

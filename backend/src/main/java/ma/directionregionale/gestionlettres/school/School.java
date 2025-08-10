@@ -30,7 +30,7 @@ public class School {
     private String directorlastname;
     private String educationlevel;
 
-    @OneToMany(mappedBy = "school", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "school")
     private List<Project> projects = new ArrayList<>();
 
     public void addProject(Project project){
@@ -38,7 +38,7 @@ public class School {
         project.setSchool(this);
     }
 
-    @OneToMany(mappedBy = "school", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "school")
     private List<Branch> branches = new ArrayList<>();
 
     public void addBranch(Branch branch){

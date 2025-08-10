@@ -13,4 +13,5 @@ public class ProjectResponse {
     private String assignedtechnician;
     private String projecttype;
     private String assignedestablishment;
+    private String status;
 }

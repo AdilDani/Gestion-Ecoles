@@ -1,0 +1,52 @@
+{
+    "schoolDetails": {
+        "id": "ca8ab134-dac7-41ca-981d-80f8f598735e",
+        "schoolname": "123",
+        "codegrais": "",
+        "username": "",
+        "password": "",
+        "phonenumber": "",
+        "region": "",
+        "numberofstudents": "",
+        "numberofclassrooms": "",
+        "directorfirstname": "",
+        "directorlastname": "",
+        "educationlevel": "primaire",
+        "hasBranch": null,
+        "hasProject": null
+    },
+    "projects": [
+        {
+            "id": "b93c8b3d-60f4-4d65-94d5-ab254cae713e",
+            "projectcode": "PRJ-2024-001",
+            "projectprogress": "0",
+            "assignedtechnician": "122",
+            "projecttype": "extension",
+            "assignedestablishment": "9b624086-3725-4a28-bbab-cf3589bd21ae",
+            "status": "actif"
+        },
+        {
+            "id": "06487678-3f0f-4612-9167-a849de99db41",
+            "projectcode": "PRJ-2024-002",
+            "projectprogress": "0",
+            "assignedtechnician": "122",
+            "projecttype": "extension",
+            "assignedestablishment": "bb5bb4b4-6dd2-4d6c-8df2-0f583fc92d22",
+            "status": "actif"
+        }
+    ],
+    "branches": [
+        {
+            "id": "9b624086-3725-4a28-bbab-cf3589bd21ae",
+            "codegrais": "1",
+            "branchname": "Nouvelle Branche 1",
+            "numberofstudents": "0"
+        },
+        {
+            "id": "bb5bb4b4-6dd2-4d6c-8df2-0f583fc92d22",
+            "codegrais": "2",
+            "branchname": "Nouvelle Branche 2",
+            "numberofstudents": "0"
+        }
+    ]
+}

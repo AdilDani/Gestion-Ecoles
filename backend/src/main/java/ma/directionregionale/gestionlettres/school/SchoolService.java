@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static ma.directionregionale.gestionlettres.utils.CommonUtils.isInt;
+
 @Service
 @Transactional
 public class SchoolService {
@@ -33,7 +35,7 @@ public class SchoolService {
     public SchoolResponse addNewSchool(SchoolRequest request){
         //this handles the creation of a school and its branches and projects
         //school creation
-        School school=new School();
+        School school = new School();
 
         school.setSchoolname(request.getSchoolname());
         school.setCodegrais(request.getCodegrais());
@@ -55,18 +57,13 @@ public class SchoolService {
                 branch.setBranchname(branchRequest.getBranchname());
                 branch.setCodegrais(branchRequest.getCodegrais());
                 branch.setNumberofstudents(branchRequest.getNumberofstudents());
+                branch.setSchool(savedSchool);
 
-                savedSchool.addBranch(branch);
+                Branch savedBranch=branchRepository.save(branch);
+                savedSchool.addBranch(savedBranch);
             }
             savedSchool = schoolRepository.save(savedSchool);
-
-
-
         }
-
-
-
-
 
 
         if (request.getProjects() != null && !request.getProjects().isEmpty()) {
@@ -76,6 +73,8 @@ public class SchoolService {
                 project.setProjecttype(projectRequest.getProjecttype());
                 project.setProjectprogress(projectRequest.getProjectprogress());
                 project.setAssignedtechnician(projectRequest.getAssignedtechnician());
+                project.setStatus(projectRequest.getStatus());
+                project.setSchool(savedSchool);
 
                 //each project has an assigned establishment
                 //it is sent from the frontend as either "main" or "1" "2",...
@@ -94,15 +93,14 @@ public class SchoolService {
                 }
 
 
-
-                savedSchool.addProject(project);
+                Project savedProject = projectRepository.save(project);
+                savedSchool.addProject(savedProject);
             }
-            schoolRepository.save(savedSchool);
+            savedSchool = schoolRepository.save(savedSchool);
         }
 
-         savedSchool=schoolRepository.save(savedSchool);
+         savedSchool = schoolRepository.save(savedSchool);
         return commonMapper.schoolToSchoolResponse(savedSchool);
-
     }
 
     public List<SchoolResponse> getAllSchools() {
@@ -123,29 +121,145 @@ public class SchoolService {
         return commonMapper.schoolToSchoolResponse(schoolOptional.get());
     }
 
-    public School updateSchool(SchoolRequest request){
-        School school = new School();
-        if(schoolRepository.existsById(request.getId())) {
-            school.setId(request.getId());
-            school.setSchoolname(request.getSchoolname());
-            school.setCodegrais(request.getCodegrais());
-            school.setUsername(request.getUsername());
-            school.setPassword(request.getPassword());
-            school.setPhonenumber(request.getPhonenumber());
-            school.setRegion(request.getRegion());
-            school.setNumberofstudents(request.getNumberofstudents());
-            school.setNumberofclassrooms(request.getNumberofclassrooms());
-            school.setDirectorfirstname(request.getDirectorfirstname());
-            school.setDirectorlastname(request.getDirectorlastname());
-            school.setEducationlevel(request.getEducationlevel());
-
-
-            return schoolRepository.save(school);
+    public SchoolResponse updateSchool(SchoolRequest request){
+        Optional<School> existingSchoolOpt = schoolRepository.findById(request.getId());
+        if (existingSchoolOpt.isEmpty()) {
+            throw new GlobalException("SCHOOL_ID_NOT_FOUND", "School with ID " + request.getId() + " does not exist");
         }
-        else{
-            throw new GlobalException("SCHOOL_ID_NOT_FOUND","School with ID " + request.getId() + " does not exist");
+
+        School school = existingSchoolOpt.get();
+        school.setId(request.getId());
+        school.setSchoolname(request.getSchoolname());
+        school.setCodegrais(request.getCodegrais());
+        school.setUsername(request.getUsername());
+        school.setPassword(request.getPassword());
+        school.setPhonenumber(request.getPhonenumber());
+        school.setRegion(request.getRegion());
+        school.setNumberofstudents(request.getNumberofstudents());
+        school.setNumberofclassrooms(request.getNumberofclassrooms());
+        school.setDirectorfirstname(request.getDirectorfirstname());
+        school.setDirectorlastname(request.getDirectorlastname());
+        school.setEducationlevel(request.getEducationlevel());
+
+
+        School savedSchool= schoolRepository.save(school);
+        
+        List<BranchRequest> branchRequests = request.getBranches() != null ? 
+                request.getBranches() : 
+                new ArrayList<>();
+        List<Branch> dbBranches = savedSchool.getBranches();
+        
+        List<String> dbBrancheIdsToDelete = new ArrayList<>();
+        
+        for(Branch dbBranch: dbBranches) {
+            boolean notExists = branchRequests.stream()
+                    .noneMatch(b -> b.getId().equals(dbBranch.getId()));
+            
+            if(notExists) {
+                dbBrancheIdsToDelete.add(dbBranch.getId());
+            }
+        }
+
+        for (String dbBranchIdToDelete : dbBrancheIdsToDelete) {
+            branchRepository.deleteById(dbBranchIdToDelete);
+            savedSchool.getBranches()
+                    .removeIf(b -> b.getId().equals(dbBranchIdToDelete));
+        }
+
+        savedSchool = schoolRepository.save(savedSchool);
+        
+        for(BranchRequest branchRequest: branchRequests) {
+            if(branchRequest.getId().equals("null")) {
+                Branch branch=new Branch();
+                branch.setNumberofstudents(branchRequest.getNumberofstudents());
+                branch.setCodegrais(branchRequest.getCodegrais());
+                branch.setBranchname(branchRequest.getBranchname());
+                branch.setSchool(savedSchool);
+
+                Branch savedBranch = branchRepository.save(branch);
+                savedSchool.getBranches().add(savedBranch);
+                savedSchool = schoolRepository.save(savedSchool);
+            }
+            else{
+                Optional<Branch> branchOptional=
+                        branchRepository.findById(branchRequest.getId());
+                if(branchOptional.isEmpty()) {
+                    throw new GlobalException("BRANCH_NOT_EXISTS", "Branch doesn't exist: " + branchRequest.getId());
+                }
+                
+                Branch branch=branchOptional.get();
+
+                branch.setNumberofstudents(branchRequest.getNumberofstudents());
+                branch.setCodegrais(branchRequest.getCodegrais());
+                branch.setBranchname(branchRequest.getBranchname());
+                branch.setSchool(savedSchool);
+
+                branchRepository.save(branch);
+                savedSchool = schoolRepository.save(savedSchool);
+            }
+        }
+
+        // -------------------------------------------------------------------
+        if(request.getProjects() != null){
+            for(ProjectRequest projectRequest: request.getProjects()){
+                if(projectRequest.getId().equals("null")){
+                    Project project = new Project();
+                    project.setSchool(savedSchool);
+                    project.setAssignedtechnician(projectRequest.getAssignedtechnician());
+                    project.setStatus(projectRequest.getStatus());
+                    project.setProjecttype(projectRequest.getProjecttype());
+                    project.setProjectprogress(projectRequest.getProjectprogress());
+                    project.setProjectcode(projectRequest.getProjectcode());
+
+                    if(projectRequest.getAssignedestablishment().equals("main")){
+                        project.setAssignedestablishment(savedSchool.getId());
+                    } else if (isInt(projectRequest.getAssignedestablishment())) {
+                        int i= Integer.parseInt(projectRequest.getAssignedestablishment());
+                        project.setAssignedestablishment(savedSchool.getBranches().get(i-1).getId());
+                    }
+                    else{
+                        project.setAssignedestablishment(projectRequest.getAssignedestablishment());
+                    }
+                    projectRepository.save(project);
+                    savedSchool.getProjects().add(project);
+                    savedSchool=schoolRepository.save(savedSchool);
+                }
+                else{
+                    Optional<Project> projectOptional = projectRepository.findById(projectRequest.getId());
+                    if(projectOptional.isEmpty()) {
+                        throw new GlobalException("PROJECT", "Project doesn't exist: " + projectRequest.getId());
+                    }
+                    Project project=projectOptional.get();
+
+                    project.setSchool(savedSchool);
+                    project.setAssignedtechnician(projectRequest.getAssignedtechnician());
+                    project.setStatus(projectRequest.getStatus());
+                    project.setProjecttype(projectRequest.getProjecttype());
+                    project.setProjectprogress(projectRequest.getProjectprogress());
+                    project.setProjectcode(projectRequest.getProjectcode());
+
+                    if(projectRequest.getAssignedestablishment().equals("main")){
+                        project.setAssignedestablishment(savedSchool.getId());
+                    } else if (isInt(projectRequest.getAssignedestablishment())) {
+                        int i= Integer.parseInt(projectRequest.getAssignedestablishment());
+                        project.setAssignedestablishment(savedSchool.getBranches().get(i-1).getId());
+                    }
+                    else{
+                        project.setAssignedestablishment(projectRequest.getAssignedestablishment());
+                    }
+                    projectRepository.save(project);
+                    savedSchool=schoolRepository.save(savedSchool);
+
+
+                }
+            }
 
         }
+
+
+        // --------------------------------------------------------------------
+
+        return commonMapper.schoolToSchoolResponse(savedSchool);
 
     }
 }

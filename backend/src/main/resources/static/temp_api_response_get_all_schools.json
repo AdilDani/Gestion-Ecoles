@@ -1,0 +1,252 @@
+[
+    {
+        "schoolDetails": {
+            "id": "08439144-0fab-4487-a06c-58dced93067a",
+            "schoolname": "Lycee Ibn Al Yassamine",
+            "codegrais": "AC@#!CFF45",
+            "username": "lmoudir.account",
+            "password": "lmoudir.lmodpass",
+            "phonenumber": "0770054344",
+            "region": "TAZA",
+            "numberofstudents": "500",
+            "numberofclassrooms": "20",
+            "directorfirstname": "al",
+            "directorlastname": "moudir",
+            "educationlevel": "lycee",
+            "hasBranch": null,
+            "hasProject": null
+        },
+        "projects": [
+            {
+                "id": "84aa70d7-01df-44ec-8a87-144adb584467",
+                "projectcode": "PRJ-2024-001",
+                "projectprogress": "90",
+                "assignedtechnician": "null",
+                "projecttype": "extension",
+                "assignedestablishment": "08439144-0fab-4487-a06c-58dced93067a"
+            },
+            {
+                "id": "a5a9e059-bccf-49db-8be4-9a3dc6f85eb1",
+                "projectcode": "PRJ-2024-002",
+                "projectprogress": "50",
+                "assignedtechnician": "123",
+                "projecttype": "renovation",
+                "assignedestablishment": "d17b4f77-26b1-4c75-845f-4601769db0c0"
+            }
+        ],
+        "branches": [
+            {
+                "id": "d17b4f77-26b1-4c75-845f-4601769db0c0",
+                "codegrais": null,
+                "branchname": "East",
+                "numberofstudents": "50"
+            },
+            {
+                "id": "f479ae56-c5d7-4f75-b04e-d005c60f27b1",
+                "codegrais": null,
+                "branchname": "West",
+                "numberofstudents": "40"
+            }
+        ]
+    },
+    {
+        "schoolDetails": {
+            "id": "20914969-4351-4eda-8748-d330325d1c5a",
+            "schoolname": "Lycee Ibn Al Yassamine",
+            "codegrais": "AC@#!CFF45",
+            "username": "lmoudir.account",
+            "password": "lmoudir.lmodpass",
+            "phonenumber": "0770054344",
+            "region": "TAZA",
+            "numberofstudents": "500",
+            "numberofclassrooms": "20",
+            "directorfirstname": "al",
+            "directorlastname": "moudir",
+            "educationlevel": "lycee",
+            "hasBranch": null,
+            "hasProject": null
+        },
+        "projects": [
+            {
+                "id": "711b7f24-9b12-4fd7-9381-1b7fb417a03c",
+                "projectcode": "PRJ-2024-001",
+                "projectprogress": "90",
+                "assignedtechnician": "null",
+                "projecttype": "extension",
+                "assignedestablishment": "20914969-4351-4eda-8748-d330325d1c5a"
+            },
+            {
+                "id": "6eef3d43-2cf7-4cb3-9fcd-8b37b19a2e88",
+                "projectcode": "PRJ-2024-002",
+                "projectprogress": "50",
+                "assignedtechnician": "123",
+                "projecttype": "renovation",
+                "assignedestablishment": "5fcfd38b-8c6e-44d2-86c8-3032883dbb8e"
+            }
+        ],
+        "branches": [
+            {
+                "id": "5fcfd38b-8c6e-44d2-86c8-3032883dbb8e",
+                "codegrais": null,
+                "branchname": "East",
+                "numberofstudents": "50"
+            },
+            {
+                "id": "7f857864-7c83-4534-b862-0c8ebe3a891b",
+                "codegrais": null,
+                "branchname": "West",
+                "numberofstudents": "40"
+            }
+        ]
+    },
+    {
+        "schoolDetails": {
+            "id": "0302b4db-970a-45a4-a1c2-ee30a646b1c5",
+            "schoolname": "Lycee Ibn Al Yassamine",
+            "codegrais": "AC@#!CFF45",
+            "username": "lmoudir.account",
+            "password": "lmoudir.lmodpass",
+            "phonenumber": "0770054344",
+            "region": "TAZA",
+            "numberofstudents": "500",
+            "numberofclassrooms": "20",
+            "directorfirstname": "al",
+            "directorlastname": "moudir",
+            "educationlevel": "lycee",
+            "hasBranch": null,
+            "hasProject": null
+        },
+        "projects": [
+            {
+                "id": "ed4b7653-637f-4c02-982e-40fed8fbc288",
+                "projectcode": "PRJ-2024-001",
+                "projectprogress": "0",
+                "assignedtechnician": "123",
+                "projecttype": "extension",
+                "assignedestablishment": "0302b4db-970a-45a4-a1c2-ee30a646b1c5"
+            },
+            {
+                "id": "25e492e8-2a7a-45fb-b731-0f0055e7c824",
+                "projectcode": "PRJ-2024-002",
+                "projectprogress": "0",
+                "assignedtechnician": "122",
+                "projecttype": "renovation",
+                "assignedestablishment": "0302b4db-970a-45a4-a1c2-ee30a646b1c5"
+            }
+        ],
+        "branches": [
+            {
+                "id": "7d7b0dfc-145b-4e30-a3a4-8cb3243e0a90",
+                "codegrais": null,
+                "branchname": "Nouvelle Branche 1",
+                "numberofstudents": "22"
+            },
+            {
+                "id": "aac6854b-13cc-49f2-81a4-258c1465b4fe",
+                "codegrais": null,
+                "branchname": "Nouvelle Branche 2",
+                "numberofstudents": "313"
+            }
+        ]
+    },
+    {
+        "schoolDetails": {
+            "id": "0af64a02-9f72-4339-8270-b50f86d5199e",
+            "schoolname": "Lycee Ibn Al Yassamine",
+            "codegrais": "AC@#!CFF45",
+            "username": "lmoudir.account",
+            "password": "lmoudir.lmodpass",
+            "phonenumber": "0770054344",
+            "region": "TAZA",
+            "numberofstudents": "500",
+            "numberofclassrooms": "20",
+            "directorfirstname": "al",
+            "directorlastname": "moudir",
+            "educationlevel": "lycee",
+            "hasBranch": null,
+            "hasProject": null
+        },
+        "projects": [
+            {
+                "id": "d34180eb-5356-4586-b980-32fc0c08048a",
+                "projectcode": "PRJ-2024-001",
+                "projectprogress": "0",
+                "assignedtechnician": "123",
+                "projecttype": "extension",
+                "assignedestablishment": "0af64a02-9f72-4339-8270-b50f86d5199e"
+            },
+            {
+                "id": "d5644d03-7664-4aed-9be7-521bf1f7e40f",
+                "projectcode": "PRJ-2024-002",
+                "projectprogress": "0",
+                "assignedtechnician": "122",
+                "projecttype": "renovation",
+                "assignedestablishment": "0af64a02-9f72-4339-8270-b50f86d5199e"
+            }
+        ],
+        "branches": [
+            {
+                "id": "c125da3b-3618-4804-b169-38229bfefc17",
+                "codegrais": null,
+                "branchname": "Nouvelle Branche 1",
+                "numberofstudents": "22"
+            },
+            {
+                "id": "25751633-41e9-4ba9-b132-d2568ed9749b",
+                "codegrais": null,
+                "branchname": "Nouvelle Branche 2",
+                "numberofstudents": "313"
+            }
+        ]
+    },
+    {
+        "schoolDetails": {
+            "id": "28556fb7-cc59-4620-8ba3-19169ffa390f",
+            "schoolname": "Lycee Ibn Al Yassamine",
+            "codegrais": "AC@#!CFF45",
+            "username": "lmoudir.account",
+            "password": "lmoudir.lmodpass",
+            "phonenumber": "0770054344",
+            "region": "TAZA",
+            "numberofstudents": "500",
+            "numberofclassrooms": "20",
+            "directorfirstname": "al",
+            "directorlastname": "moudir",
+            "educationlevel": "lycee",
+            "hasBranch": null,
+            "hasProject": null
+        },
+        "projects": [
+            {
+                "id": "2edc11f2-b7d6-4e92-8de7-a167338acce5",
+                "projectcode": "PRJ-2024-001",
+                "projectprogress": "0",
+                "assignedtechnician": "123",
+                "projecttype": "extension",
+                "assignedestablishment": "28556fb7-cc59-4620-8ba3-19169ffa390f"
+            },
+            {
+                "id": "3b401116-cde1-4497-be9d-21af5c1e25a1",
+                "projectcode": "PRJ-2024-002",
+                "projectprogress": "0",
+                "assignedtechnician": "122",
+                "projecttype": "renovation",
+                "assignedestablishment": "28556fb7-cc59-4620-8ba3-19169ffa390f"
+            }
+        ],
+        "branches": [
+            {
+                "id": "111cd100-d6bd-4bc4-8efc-fd87b916c997",
+                "codegrais": null,
+                "branchname": "Nouvelle Branche 1",
+                "numberofstudents": "22"
+            },
+            {
+                "id": "a1fa511a-ecd2-4429-b702-12fbc8df1f89",
+                "codegrais": null,
+                "branchname": "Nouvelle Branche 2",
+                "numberofstudents": "313"
+            }
+        ]
+    }
+]
