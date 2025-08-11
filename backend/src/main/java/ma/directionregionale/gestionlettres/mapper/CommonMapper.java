@@ -1,12 +1,10 @@
 package ma.directionregionale.gestionlettres.mapper;
 
 import ma.directionregionale.gestionlettres.branch.Branch;
-import ma.directionregionale.gestionlettres.dto.BranchResponse;
-import ma.directionregionale.gestionlettres.dto.ProjectResponse;
-import ma.directionregionale.gestionlettres.dto.SchoolDetailsResponse;
-import ma.directionregionale.gestionlettres.dto.SchoolResponse;
+import ma.directionregionale.gestionlettres.dto.*;
 import ma.directionregionale.gestionlettres.project.Project;
 import ma.directionregionale.gestionlettres.school.School;
+import ma.directionregionale.gestionlettres.template.Template;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -75,4 +73,14 @@ public class CommonMapper {
         }
     }
 
+
+    public TemplateResponse templateToTemplateResponse (Template template){
+        TemplateResponse templateResponse = new TemplateResponse();
+
+        templateResponse.setId(template.getId());
+        templateResponse.setName(template.getName());
+        templateResponse.setDescription(template.getDescription());
+        templateResponse.setFields(template.getFields());
+         return templateResponse;
+    }
 }
