@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modèle de Lettre - Direction Régionale</title>
+    <style>
+        /* Palette de couleurs pour l'interface administrateur */
+        :root {
+            --admin-primary: #1565C0;
+            --admin-secondary: #0D47A1;
+            --admin-light: #E3F2FD;
+            --primary-red: #C41E3A;
+            --primary-green: #006233;
+            --accent-orange: #FF8C00;
+            --neutral-white: #FFFFFF;
+            --light-gray: #F8F9FA;
+            --medium-gray: #6C757D;
+            --dark-gray: #343A40;
+            --border-gray: #DEE2E6;
+            --success-green: #28A745;
+            --warning-orange: #FD7E14;
+            --danger-red: #DC3545;
+            
+            --shadow-light: 0 2px 4px rgba(0,0,0,0.1);
+            --shadow-medium: 0 4px 8px rgba(0,0,0,0.15);
+            --shadow-heavy: 0 8px 16px rgba(0,0,0,0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-gray);
+            color: var(--dark-gray);
+            line-height: 1.6;
+            direction: ltr;
+            transition: direction 0.3s ease;
+        }
+
+        /* RTL Support */
+        body[dir="rtl"] {
+            direction: rtl;
+            font-family: 'Arial', 'Tahoma', sans-serif;
+        }
+
+        /* Language Toggle */
+        .language-toggle {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-left: auto;
+        }
+
+        body[dir="rtl"] .language-toggle {
+            margin-left: 0;
+            margin-right: auto;
+        }
+
+        .lang-flag {
+            font-size: 1.2rem;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .lang-flag:hover {
+            opacity: 0.8;
+            transform: scale(1.1);
+        }
+
+        .lang-flag.active {
+            opacity: 1;
+            transform: scale(1.2);
+        }
+
+        /* Header administrateur */
+        .admin-header {
+            background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-secondary) 100%);
+            color: var(--neutral-white);
+            padding: 1rem 0;
+            box-shadow: var(--shadow-medium);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .admin-logo {
+            width: 50px;
+            height: 50px;
+            background: var(--neutral-white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--admin-primary);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .header-text {
+            flex: 1;
+        }
+
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .header-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .admin-nav {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-link {
+            color: var(--neutral-white);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: background-color 0.3s ease;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Back button */
+        .back-section {
+            max-width: 1200px;
+            margin: 2rem auto 0;
+            padding: 0 2rem;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--admin-primary);
+            text-decoration: none;
+            font-weight: 600;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            background: var(--neutral-white);
+            box-shadow: var(--shadow-light);
+        }
+
+        .back-btn:hover {
+            background: var(--admin-light);
+            transform: translateX(-2px);
+        }
+
+        /* Container principal */
+        .main-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        /* Page header */
+        .page-header {
+            background: var(--neutral-white);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow-medium);
+            margin-bottom: 2rem;
+            border-left: 4px solid var(--admin-primary);
+        }
+
+        .page-title {
+            color: var(--admin-primary);
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-description {
+            color: var(--medium-gray);
+            font-size: 1.1rem;
+        }
+
+        /* Template form */
+        .template-form-container {
+            background: var(--neutral-white);
+            border-radius: 12px;
+            box-shadow: var(--shadow-medium);
+            overflow: hidden;
+        }
+
+        .form-section {
+            padding: 2rem;
+            border-bottom: 1px solid var(--border-gray);
+        }
+
+        .form-section:last-child {
+            border-bottom: none;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--dark-gray);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: var(--dark-gray);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border-gray);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--admin-primary);
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        /* Fields section */
+        .fields-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .field-item {
+            background: var(--light-gray);
+            padding: 1.5rem;
+            border-radius: 10px;
+            border: 1px solid var(--border-gray);
+        }
+
+        .field-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .field-number {
+            background: var(--admin-primary);
+            color: var(--neutral-white);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .field-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .field-btn {
+            padding: 0.5rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .field-btn.danger {
+            background: var(--danger-red);
+            color: var(--neutral-white);
+        }
+
+        .field-btn.danger:hover {
+            background: #c82333;
+        }
+
+        .field-row {
+            display: block;
+        }
+
+        .add-field-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 1rem;
+            border: 2px dashed var(--admin-primary);
+            border-radius: 10px;
+            background: var(--admin-light);
+            color: var(--admin-primary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .add-field-btn:hover {
+            background: var(--neutral-white);
+            border-color: var(--primary-green);
+            color: var(--primary-green);
+        }
+
+        /* Action buttons */
+        .action-buttons {
+            background: var(--light-gray);
+            padding: 2rem;
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: var(--admin-primary);
+            color: var(--neutral-white);
+        }
+
+        .btn-primary:hover {
+            background: var(--admin-secondary);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary:disabled {
+            background: var(--medium-gray);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-success {
+            background: var(--success-green);
+            color: var(--neutral-white);
+        }
+
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--medium-gray);
+            color: var(--neutral-white);
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        /* Empty state */
+        .empty-fields {
+            text-align: center;
+            padding: 3rem;
+            color: var(--medium-gray);
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Loading state */
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--medium-gray);
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .header-content {
+                padding: 0 1rem;
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .admin-nav {
+                order: -1;
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .main-container,
+            .back-section {
+                padding: 0 1rem;
+            }
+            
+            .page-header {
+                padding: 1.5rem;
+            }
+            
+            .form-section {
+                padding: 1.5rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+
+        /* Animation */
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header administrateur -->
+    <header class="admin-header">
+        <div class="header-content">
+            <div class="admin-logo">📝</div>
+            <div class="header-text">
+                <h1 class="header-title" data-fr="Interface Administrateur - Direction Régionale" data-ar="واجهة الإدارة - المديرية الجهوية">Interface Administrateur - Direction Régionale</h1>
+                <p class="header-subtitle" data-fr="Gestion des Modèles de Lettres" data-ar="إدارة نماذج الرسائل">Gestion des Modèles de Lettres</p>
+            </div>
+            <nav class="admin-nav">
+                <a href="admin_school_dashboard.html" class="nav-link" data-fr="Écoles" data-ar="المدارس">Écoles</a>
+                <a href="letter_management_page.html" class="nav-link" data-fr="Lettres" data-ar="الرسائل">Lettres</a>
+                <a href="templates.html" class="nav-link active" data-fr="Modèles" data-ar="النماذج">Modèles</a>
+            </nav>
+            <div class="language-toggle">
+                <span class="lang-flag active" id="frenchBtn" onclick="switchLanguage('fr')">🇫🇷</span>
+                <span class="lang-flag" id="arabicBtn" onclick="switchLanguage('ar')">🇲🇦</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Back button -->
+    <div class="back-section">
+        <a href="templates.html" class="back-btn" data-fr="← Retour aux modèles" data-ar="← العودة إلى النماذج">← Retour aux modèles</a>
+    </div>
+
+    <!-- Contenu principal -->
+    <main class="main-container">
+        <!-- En-tête -->
+        <div class="page-header fade-in">
+            <h2 class="page-title" id="pageTitle" data-fr="📝 Nouveau Modèle de Lettre" data-ar="📝 نموذج رسالة جديد">📝 Nouveau Modèle de Lettre</h2>
+            <p class="page-description" id="pageDescription" data-fr="Créez un nouveau modèle de lettre avec des champs personnalisés pour les communications avec les établissements." data-ar="إنشاء نموذج رسالة جديد مع حقول مخصصة للتواصل مع المؤسسات.">
+                Créez un nouveau modèle de lettre avec des champs personnalisés pour les communications avec les établissements.
+            </p>
+        </div>
+
+        <!-- Loading state -->
+        <div class="loading" id="loadingState" style="display: none;">
+            <div class="empty-icon">⏳</div>
+            <p>Chargement du modèle...</p>
+        </div>
+
+        <!-- Formulaire -->
+        <div class="template-form-container fade-in" id="templateForm" style="display: none;">
+            <!-- Informations de base -->
+            <div class="form-section">
+                <h3 class="section-title" data-fr="📋 Informations de Base" data-ar="📋 المعلومات الأساسية">📋 Informations de Base</h3>
+                
+                <div class="form-group">
+                    <label class="form-label" data-fr="Nom du modèle" data-ar="اسم النموذج">Nom du modèle</label>
+                    <input type="text" class="form-input" id="templateName" placeholder="Ex: Rapport de Projet Mensuel" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" data-fr="Description" data-ar="الوصف">Description</label>
+                    <textarea class="form-input form-textarea" id="templateDescription" placeholder="Décrivez l'objectif de ce modèle de lettre..." required></textarea>
+                </div>
+            </div>
+
+            <!-- Champs personnalisés -->
+            <div class="form-section">
+                <h3 class="section-title" data-fr="⚙️ Champs du Modèle" data-ar="⚙️ حقول النموذج">⚙️ Champs du Modèle</h3>
+                
+                <div class="fields-container" id="fieldsContainer">
+                    <!-- Dynamic fields will be added here -->
+                </div>
+                
+                <div class="add-field-btn" onclick="addField()" data-fr="➕ Ajouter un champ" data-ar="➕ إضافة حقل">
+                    ➕ Ajouter un champ
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="action-buttons">
+                <button class="btn btn-secondary" onclick="cancelEdit()" data-fr="Annuler" data-ar="إلغاء">Annuler</button>
+                <button class="btn btn-primary" onclick="saveTemplate()" id="saveBtn" data-fr="Enregistrer le modèle" data-ar="حفظ النموذج">Enregistrer le modèle</button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let currentLanguage = localStorage.getItem('selectedLanguage') || 'fr';
+        let fieldCounter = 0;
+        let editMode = false;
+        let templateId = null;
+
+        // Initialize page based on URL parameters
+        function initializePage() {
+            const urlParams = new URLSearchParams(window.location.search);
+            templateId = urlParams.get('id');
+            
+            if (templateId && templateId !== 'null') {
+                editMode = true;
+                loadTemplateData(templateId);
+                updatePageForEdit();
+            } else {
+                editMode = false;
+                templateId = null;
+                // Add default field for new templates
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('templateForm').style.display = 'block';
+                addField();
+            }
+        }
+
+        function updatePageForEdit() {
+            document.getElementById('pageTitle').textContent = '✏️ Modifier le Modèle';
+            document.getElementById('pageTitle').setAttribute('data-fr', '✏️ Modifier le Modèle');
+            document.getElementById('pageTitle').setAttribute('data-ar', '✏️ تعديل النموذج');
+            
+            document.getElementById('pageDescription').textContent = 'Modifiez les informations et les champs de ce modèle de lettre.';
+            document.getElementById('pageDescription').setAttribute('data-fr', 'Modifiez les informations et les champs de ce modèle de lettre.');
+            document.getElementById('pageDescription').setAttribute('data-ar', 'تعديل المعلومات وحقول نموذج الرسالة هذا.');
+            
+            document.getElementById('saveBtn').textContent = 'Enregistrer les modifications';
+            document.getElementById('saveBtn').setAttribute('data-fr', 'Enregistrer les modifications');
+            document.getElementById('saveBtn').setAttribute('data-ar', 'حفظ التغييرات');
+        }
+
+        function loadTemplateData(id) {
+            document.getElementById('loadingState').style.display = 'block';
+            document.getElementById('templateForm').style.display = 'none';
+            
+            fetch(`http://localhost:8080/api/templates/${id}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Template not found');
+                }
+                return response.json();
+            })
+            .then(template => {
+                document.getElementById('templateName').value = template.name;
+                document.getElementById('templateDescription').value = template.description;
+                
+                // Clear existing fields and load template fields
+                document.getElementById('fieldsContainer').innerHTML = '';
+                fieldCounter = 0;
+                
+                if (template.fields && template.fields.length > 0) {
+                    template.fields.forEach(fieldName => {
+                        addFieldWithData({ name: fieldName });
+                    });
+                } else {
+                    addField();
+                }
+                
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('templateForm').style.display = 'block';
+            })
+            .catch(error => {
+                console.error('Error loading template:', error);
+                alert('Erreur lors du chargement du modèle: ' + error.message);
+                window.location.href = 'templates.html';
+            });
+        }
+
+        // Language switching functionality
+        function switchLanguage(lang) {
+            currentLanguage = lang;
+            localStorage.setItem('selectedLanguage', lang);
+            const body = document.body;
+            
+            if (lang === 'ar') {
+                body.setAttribute('dir', 'rtl');
+            } else {
+                body.setAttribute('dir', 'ltr');
+            }
+            
+            document.querySelectorAll('.lang-flag').forEach(flag => flag.classList.remove('active'));
+            document.getElementById(lang === 'fr' ? 'frenchBtn' : 'arabicBtn').classList.add('active');
+            
+            document.querySelectorAll('[data-fr]').forEach(element => {
+                const text = element.getAttribute(`data-${lang}`);
+                if (text) {
+                    element.textContent = text;
+                }
+            });
+        }
+
+        function addField() {
+            fieldCounter++;
+            const container = document.getElementById('fieldsContainer');
+            
+            const fieldHtml = `
+                <div class="field-item" id="field-${fieldCounter}">
+                    <div class="field-header">
+                        <div class="field-number">${fieldCounter}</div>
+                        <div class="field-actions">
+                            <button class="field-btn danger" onclick="removeField(${fieldCounter})">🗑️</button>
+                        </div>
+                    </div>
+                    <div class="field-row">
+                        <div class="form-group">
+                            <label class="form-label">Nom du champ</label>
+                            <input type="text" class="form-input" placeholder="Ex: État d'avancement" required>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            container.insertAdjacentHTML('beforeend', fieldHtml);
+        }
+
+        function addFieldWithData(fieldData) {
+            fieldCounter++;
+            const container = document.getElementById('fieldsContainer');
+            
+            const fieldHtml = `
+                <div class="field-item" id="field-${fieldCounter}">
+                    <div class="field-header">
+                        <div class="field-number">${fieldCounter}</div>
+                        <div class="field-actions">
+                            <button class="field-btn danger" onclick="removeField(${fieldCounter})">🗑️</button>
+                        </div>
+                    </div>
+                    <div class="field-row">
+                        <div class="form-group">
+                            <label class="form-label">Nom du champ</label>
+                            <input type="text" class="form-input" value="${escapeHtml(fieldData.name)}" required>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            container.insertAdjacentHTML('beforeend', fieldHtml);
+        }
+
+        function removeField(fieldId) {
+            const field = document.getElementById(`field-${fieldId}`);
+            if (field) {
+                field.remove();
+                renumberFields();
+            }
+        }
+
+        function renumberFields() {
+            const fields = document.querySelectorAll('.field-item');
+            fields.forEach((field, index) => {
+                const number = field.querySelector('.field-number');
+                if (number) {
+                    number.textContent = index + 1;
+                }
+            });
+        }
+
+        function saveTemplate() {
+            const name = document.getElementById('templateName').value;
+            const description = document.getElementById('templateDescription').value;
+            
+            if (!name.trim()) {
+                alert('Veuillez saisir un nom pour le modèle');
+                return;
+            }
+            
+            const fields = collectFieldData();
+            if (fields.length === 0) {
+                alert('Veuillez ajouter au moins un champ');
+                return;
+            }
+            
+            const templateData = {
+                name: name.trim(),
+                description: description.trim(),
+                fields
+            };
+            
+            // Add ID for PUT request
+            if (editMode && templateId) {
+                templateData.id = templateId;
+            }
+            
+            const saveBtn = document.getElementById('saveBtn');
+            const originalText = saveBtn.textContent;
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Enregistrement...';
+            
+            const url = 'http://localhost:8080/api/templates';
+            const method = editMode ? 'PUT' : 'POST';
+            
+            fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(templateData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Erreur ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Template saved:', data);
+                
+                const action = editMode ? 'modifié' : 'créé';
+                alert(`Modèle "${name}" ${action} avec succès!`);
+                
+                // Redirect back to templates
+                window.location.href = 'templates.html';
+            })
+            .catch(error => {
+                console.error('Error saving template:', error);
+                alert('Erreur lors de l\'enregistrement du modèle: ' + error.message);
+            })
+            .finally(() => {
+                saveBtn.disabled = false;
+                saveBtn.textContent = originalText;
+            });
+        }
+
+        function collectFieldData() {
+            const fields = [];
+            const fieldItems = document.querySelectorAll('.field-item');
+            
+            fieldItems.forEach(item => {
+                const nameInput = item.querySelector('input[type="text"]');
+                
+                if (nameInput && nameInput.value.trim()) {
+                    fields.push(nameInput.value.trim());
+                }
+            });
+            
+            return fields;
+        }
+
+        function cancelEdit() {
+            if (confirm('Êtes-vous sûr de vouloir annuler? Toutes les modifications seront perdues.')) {
+                window.location.href = 'templates.html';
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Initialize page on load
+        document.addEventListener('DOMContentLoaded', function() {
+            switchLanguage(currentLanguage);
+            initializePage();
+        });
+    </script>
+</body>
+</html>

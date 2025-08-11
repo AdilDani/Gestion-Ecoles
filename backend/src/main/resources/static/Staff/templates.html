@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <script>
+        const templatesPromise = fetch('http://localhost:8080/api/templates', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            }})
+            .then(response => response.json());
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modèles de Lettres - Direction Régionale</title>
+    <style>
+        /* Palette de couleurs pour l'interface administrateur */
+        :root {
+            --admin-primary: #1565C0;
+            --admin-secondary: #0D47A1;
+            --admin-light: #E3F2FD;
+            --primary-red: #C41E3A;
+            --primary-green: #006233;
+            --accent-orange: #FF8C00;
+            --neutral-white: #FFFFFF;
+            --light-gray: #F8F9FA;
+            --medium-gray: #6C757D;
+            --dark-gray: #343A40;
+            --border-gray: #DEE2E6;
+            --success-green: #28A745;
+            --warning-orange: #FD7E14;
+            --danger-red: #DC3545;
+            
+            --shadow-light: 0 2px 4px rgba(0,0,0,0.1);
+            --shadow-medium: 0 4px 8px rgba(0,0,0,0.15);
+            --shadow-heavy: 0 8px 16px rgba(0,0,0,0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-gray);
+            color: var(--dark-gray);
+            line-height: 1.6;
+            direction: ltr;
+            transition: direction 0.3s ease;
+        }
+
+        /* RTL Support */
+        body[dir="rtl"] {
+            direction: rtl;
+            font-family: 'Arial', 'Tahoma', sans-serif;
+        }
+
+        /* Language Toggle */
+        .language-toggle {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-left: auto;
+        }
+
+        body[dir="rtl"] .language-toggle {
+            margin-left: 0;
+            margin-right: auto;
+        }
+
+        .lang-flag {
+            font-size: 1.2rem;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .lang-flag:hover {
+            opacity: 0.8;
+            transform: scale(1.1);
+        }
+
+        .lang-flag.active {
+            opacity: 1;
+            transform: scale(1.2);
+        }
+
+        /* Header administrateur */
+        .admin-header {
+            background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-secondary) 100%);
+            color: var(--neutral-white);
+            padding: 1rem 0;
+            box-shadow: var(--shadow-medium);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .admin-logo {
+            width: 50px;
+            height: 50px;
+            background: var(--neutral-white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--admin-primary);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .header-text {
+            flex: 1;
+        }
+
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .header-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .admin-nav {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-link {
+            color: var(--neutral-white);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: background-color 0.3s ease;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Container principal */
+        .main-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        /* Page header */
+        .page-header {
+            background: var(--neutral-white);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow-medium);
+            margin-bottom: 2rem;
+            border-left: 4px solid var(--admin-primary);
+        }
+
+        .page-title {
+            color: var(--admin-primary);
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-description {
+            color: var(--medium-gray);
+            font-size: 1.1rem;
+        }
+
+        /* Templates container */
+        .templates-container {
+            background: var(--neutral-white);
+            border-radius: 12px;
+            box-shadow: var(--shadow-medium);
+            padding: 2rem;
+            overflow: hidden;
+        }
+
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .template-card {
+            background: var(--neutral-white);
+            border: 2px solid var(--border-gray);
+            border-radius: 12px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-light);
+            height: fit-content;
+        }
+
+        .template-card:hover {
+            border-color: var(--admin-primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .add-template-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 150px;
+            border-style: dashed;
+            border-color: var(--admin-primary);
+            background: var(--admin-light);
+        }
+
+        .add-template-card:hover {
+            background: var(--neutral-white);
+            border-color: var(--primary-green);
+        }
+
+        .add-template-icon {
+            font-size: 2rem;
+            color: var(--admin-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .add-template-text {
+            color: var(--admin-primary);
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .template-card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .template-type {
+            padding: 0.5rem;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            background: var(--admin-primary);
+            color: var(--neutral-white);
+        }
+
+        .template-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--dark-gray);
+        }
+
+        .template-description {
+            color: var(--medium-gray);
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+
+        .template-fields {
+            color: var(--admin-primary);
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--medium-gray);
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Loading state */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--medium-gray);
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .header-content {
+                padding: 0 1rem;
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .admin-nav {
+                order: -1;
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .main-container {
+                padding: 0 1rem;
+            }
+            
+            .page-header {
+                padding: 1.5rem;
+            }
+            
+            .templates-container {
+                padding: 1.5rem;
+            }
+            
+            .template-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Animation */
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header administrateur -->
+    <header class="admin-header">
+        <div class="header-content">
+            <div class="admin-logo">📝</div>
+            <div class="header-text">
+                <h1 class="header-title" data-fr="Interface Administrateur - Direction Régionale" data-ar="واجهة الإدارة - المديرية الجهوية">Interface Administrateur - Direction Régionale</h1>
+                <p class="header-subtitle" data-fr="Gestion des Modèles de Lettres" data-ar="إدارة نماذج الرسائل">Gestion des Modèles de Lettres</p>
+            </div>
+            <nav class="admin-nav">
+                <a href="admin_school_dashboard.html" class="nav-link" data-fr="Écoles" data-ar="المدارس">Écoles</a>
+                <a href="letter_management_page.html" class="nav-link" data-fr="Lettres" data-ar="الرسائل">Lettres</a>
+                <a href="#" class="nav-link active" data-fr="Modèles" data-ar="النماذج">Modèles</a>
+            </nav>
+            <div class="language-toggle">
+                <span class="lang-flag active" id="frenchBtn" onclick="switchLanguage('fr')">🇫🇷</span>
+                <span class="lang-flag" id="arabicBtn" onclick="switchLanguage('ar')">🇲🇦</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenu principal -->
+    <main class="main-container">
+        <!-- En-tête -->
+        <div class="page-header fade-in">
+            <h2 class="page-title" data-fr="📝 Modèles de Lettres" data-ar="📝 نماذج الرسائل">📝 Modèles de Lettres</h2>
+            <p class="page-description" data-fr="Gérez vos modèles de lettres pour les communications avec les établissements." data-ar="إدارة نماذج الرسائل للتواصل مع المؤسسات.">
+                Gérez vos modèles de lettres pour les communications avec les établissements.
+            </p>
+        </div>
+
+        <!-- Templates container -->
+        <div class="templates-container fade-in">
+            <div class="template-grid" id="templatesGrid">
+                <!-- Loading state -->
+                <div class="loading" id="loadingState">
+                    <div class="empty-icon">⏳</div>
+                    <p>Chargement des modèles...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let currentLanguage = localStorage.getItem('selectedLanguage') || 'fr';
+        let templates = [];
+
+        // Language switching functionality with persistence
+        function switchLanguage(lang) {
+            currentLanguage = lang;
+            localStorage.setItem('selectedLanguage', lang);
+            const body = document.body;
+            
+            // Update direction
+            if (lang === 'ar') {
+                body.setAttribute('dir', 'rtl');
+            } else {
+                body.setAttribute('dir', 'ltr');
+            }
+            
+            // Update active flag
+            document.querySelectorAll('.lang-flag').forEach(flag => flag.classList.remove('active'));
+            document.getElementById(lang === 'fr' ? 'frenchBtn' : 'arabicBtn').classList.add('active');
+            
+            // Update all text elements
+            document.querySelectorAll('[data-fr]').forEach(element => {
+                const text = element.getAttribute(`data-${lang}`);
+                if (text) {
+                    element.textContent = text;
+                }
+            });
+        }
+
+        // Initialize language on page load
+        function initializeLanguage() {
+            switchLanguage(currentLanguage);
+        }
+
+        // Template management functions
+        function createNewTemplate() {
+            window.location.href = 'letter_template_page.html?id=null';
+        }
+
+        function editTemplate(templateId) {
+            window.location.href = `letter_template_page.html?id=${templateId}`;
+        }
+
+        // Load templates from API
+        function loadTemplates() {
+            templatesPromise
+                .then(data => {
+                    templates = data;
+                    renderTemplates();
+                })
+                .catch(error => {
+                    console.error('Error loading templates:', error);
+                    showErrorState();
+                });
+        }
+
+        function renderTemplates() {
+            const grid = document.getElementById('templatesGrid');
+            
+            if (templates.length === 0) {
+                showEmptyState();
+                return;
+            }
+
+            let gridHTML = `
+                <div class="template-card add-template-card" onclick="createNewTemplate()">
+                    <div class="add-template-icon">➕</div>
+                    <div class="add-template-text" data-fr="Ajouter un modèle" data-ar="إضافة نموذج">Ajouter un modèle</div>
+                </div>
+            `;
+
+            templates.forEach(template => {
+                gridHTML += `
+                    <div class="template-card" onclick="editTemplate('${template.id}')">
+                        <div class="template-card-header">
+                            <span class="template-type">📝</span>
+                            <span class="template-name">${escapeHtml(template.name)}</span>
+                        </div>
+                        <div class="template-description">${escapeHtml(template.description)}</div>
+                        <div class="template-fields">${template.fields.length} champs définis</div>
+                    </div>
+                `;
+            });
+
+            grid.innerHTML = gridHTML;
+            
+            // Update language for newly added elements
+            initializeLanguage();
+        }
+
+        function showEmptyState() {
+            const grid = document.getElementById('templatesGrid');
+            grid.innerHTML = `
+                <div class="template-card add-template-card" onclick="createNewTemplate()">
+                    <div class="add-template-icon">➕</div>
+                    <div class="add-template-text" data-fr="Ajouter un modèle" data-ar="إضافة نموذج">Ajouter un modèle</div>
+                </div>
+                <div class="empty-state">
+                    <div class="empty-icon">📝</div>
+                    <p data-fr="Aucun modèle disponible. Créez votre premier modèle!" data-ar="لا توجد نماذج متاحة. أنشئ النموذج الأول!">Aucun modèle disponible. Créez votre premier modèle!</p>
+                </div>
+            `;
+            initializeLanguage();
+        }
+
+        function showErrorState() {
+            const grid = document.getElementById('templatesGrid');
+            grid.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">❌</div>
+                    <p data-fr="Erreur lors du chargement des modèles" data-ar="خطأ في تحميل النماذج">Erreur lors du chargement des modèles</p>
+                    <button onclick="location.reload()" style="margin-top: 1rem; padding: 0.5rem 1rem; border: none; border-radius: 6px; background: var(--admin-primary); color: white; cursor: pointer;">Réessayer</button>
+                </div>
+            `;
+            initializeLanguage();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Initialize language when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeLanguage();
+            loadTemplates();
+        });
+    </script>
+</body>
+</html>
