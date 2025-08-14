@@ -5,7 +5,9 @@ import lombok.Getter;
 import lombok.Setter;
 import ma.directionregionale.gestionlettres.branch.Branch;
 import ma.directionregionale.gestionlettres.dto.BranchRequest;
+import ma.directionregionale.gestionlettres.letter.Letter;
 import ma.directionregionale.gestionlettres.project.Project;
+import ma.directionregionale.gestionlettres.response.Response;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,17 +35,22 @@ public class School {
     @OneToMany(mappedBy = "school")
     private List<Project> projects = new ArrayList<>();
 
-    public void addProject(Project project){
-        projects.add(project);
-        project.setSchool(this);
-    }
-
     @OneToMany(mappedBy = "school")
     private List<Branch> branches = new ArrayList<>();
+
+    @ManyToMany(mappedBy = "schools")
+    private List<Letter> letters = new ArrayList<>();
+
+    @OneToMany(mappedBy = "school")
+    private List<Response> responses = new ArrayList<>();
 
     public void addBranch(Branch branch){
         branches.add(branch);
         branch.setSchool(this);
+    }
+    public void addProject(Project project){
+        projects.add(project);
+        project.setSchool(this);
     }
 
 

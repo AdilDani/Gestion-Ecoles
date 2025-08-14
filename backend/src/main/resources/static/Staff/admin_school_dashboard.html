@@ -9,6 +9,13 @@
                         'Content-Type': 'application/json',
                     }})
                     .then(response=>response.json())
+
+        const templatesPromise = fetch('http://localhost:8080/api/templates', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            }})
+            .then(response => response.json());
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -469,6 +476,288 @@
             }
         }
 
+        /* Template Selection Container */
+        .template-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        body.modal-open {
+            overflow: hidden !important;
+            position: fixed;
+            width: 100%;
+        }
+
+        .template-modal {
+            background: var(--neutral-white);
+            border-radius: 16px;
+            width: 80%;
+            height: 90vh;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-heavy);
+            overflow: hidden;
+        }
+
+        .template-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border-gray);
+            background: var(--admin-light);
+        }
+
+        .template-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--admin-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .template-subtitle {
+            color: var(--medium-gray);
+            font-size: 0.9rem;
+        }
+
+        .template-content {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .template-placeholder {
+            color: var(--medium-gray);
+            font-size: 1.1rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .template-footer {
+            padding: 1.5rem 2rem;
+            border-top: 1px solid var(--border-gray);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .template-actions {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .letter-options {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+            justify-content: center;
+            order: 1;
+            margin-right: 4rem;
+            transform: translateY(-0.6rem);
+        }
+
+        .option-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            min-width: 150px;
+        }
+
+        .option-field label {
+            font-weight: 600;
+            color: var(--dark-gray);
+            font-size: 0.85rem;
+        }
+
+        .option-field input,
+        .option-field select {
+            padding: 0.5rem;
+            border: 2px solid var(--border-gray);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            background: var(--neutral-white);
+            transition: border-color 0.3s ease;
+        }
+
+        .option-field input:focus,
+        .option-field select:focus {
+            outline: none;
+            border-color: var(--admin-primary);
+            box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .template-actions {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .letter-options {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+
+        .cancel-btn {
+            position: absolute;
+            right: 2rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--neutral-white);
+            color: var(--medium-gray);
+            border: 2px solid var(--border-gray);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .cancel-btn:hover {
+            background: var(--light-gray);
+            border-color: var(--medium-gray);
+        }
+
+        .send-template-btn {
+            padding: 0.75rem 2rem;
+            background: linear-gradient(135deg, var(--primary-red) 0%, #B71C1C 100%);
+            color: var(--neutral-white);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .send-template-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-heavy);
+        }
+
+        .send-template-btn {
+            order: 2;
+            margin-right: 0.5rem;
+        }
+
+        .send-template-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .cancel-btn {
+            order: 3;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: var(--light-gray);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: var(--medium-gray);
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: var(--border-gray);
+            color: var(--dark-gray);
+        }
+
+        /* Template grid within modal */
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+            padding: 2rem;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .template-card {
+            background: var(--neutral-white);
+            border: 2px solid var(--border-gray);
+            border-radius: 12px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-light);
+        }
+
+        .template-card:hover {
+            border-color: var(--admin-primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .template-card.selected {
+            border-color: var(--primary-red);
+            background: rgba(196, 30, 58, 0.05);
+            box-shadow: 0 0 0 3px rgba(196, 30, 58, 0.1);
+        }
+
+        .template-card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .template-type {
+            padding: 0.5rem;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            background: var(--admin-primary);
+            color: var(--neutral-white);
+        }
+
+        .template-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--dark-gray);
+        }
+
+        .template-description {
+            color: var(--medium-gray);
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+
+        .template-fields {
+            color: var(--admin-primary);
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .template-loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--medium-gray);
+        }
+
         /* Animation */
         .fade-in {
             animation: fadeIn 0.6s ease-out;
@@ -577,10 +866,60 @@
         </div>
     </main>
 
+    <!-- Template Selection Container -->
+    <div class="template-container" id="templateContainer">
+        <div class="template-modal">
+            <button class="close-btn" onclick="closeTemplateModal()">✕</button>
+            <div class="template-header">
+                <h2 class="template-title" data-fr="Sélectionner un modèle de lettre" data-ar="اختر نموذج رسالة">
+                    Sélectionner un modèle de lettre
+                </h2>
+                <p class="template-subtitle">
+                    <span id="selectedSchoolsCount">0</span> <span data-fr="école(s) sélectionnée(s)" data-ar="مدرسة محددة">école(s) sélectionnée(s)</span>
+                </p>
+            </div>
+            <div class="template-content">
+                <div class="template-grid" id="templateGrid">
+                    <div class="template-loading" id="templateLoading">
+                        <div>⏳</div>
+                        <p data-fr="Chargement des modèles..." data-ar="تحميل النماذج...">Chargement des modèles...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="template-footer">
+                <div class="template-actions">
+                    <button class="cancel-btn" onclick="closeTemplateModal()" data-fr="Annuler" data-ar="إلغاء">
+                        Annuler
+                    </button>
+                    
+                    <div class="letter-options">
+                        <div class="option-field">
+                            <label for="letterDeadline" data-fr="Date limite" data-ar="الموعد النهائي">Date limite</label>
+                            <input type="date" id="letterDeadline" required>
+                        </div>
+                        <div class="option-field">
+                            <label for="letterUrgency" data-fr="Urgence" data-ar="الإلحاح">Urgence</label>
+                            <select id="letterUrgency">
+                                <option value="normal" data-fr="Normal" data-ar="عادي">Normal</option>
+                                <option value="urgent" data-fr="Urgent" data-ar="عاجل">Urgent</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <button class="send-template-btn" onclick="sendSelectedTemplate()" data-fr="📧 Envoyer Lettre" data-ar="📧 إرسال رسالة">
+                        📧 Envoyer Lettre
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Variables globales
         let selectedSchools = new Set();
         let isProjectFilterActive = false;
+        let selectedTemplateId = null;
+        let templates = [];
 
         // Ouvrir la page de détail d'une école
         function openSchoolDetail(schoolId, event) {
@@ -776,7 +1115,7 @@
             }
         }
 
-        // Envoyer des lettres
+        // Envoyer des lettres - show template modal
         function sendLetters() {
             const message = currentLanguage === 'ar' ?
                 'يرجى تحديد مدرسة واحدة على الأقل' :
@@ -787,18 +1126,195 @@
                 return;
             }
 
-            const selectedCount = selectedSchools.size;
-            const confirmMsg = currentLanguage === 'ar' ?
-                `إرسال رسالة إلى ${selectedCount} مدرسة محددة؟` :
-                `Envoyer une lettre à ${selectedCount} école(s) sélectionnée(s) ?`;
-            const successMsg = currentLanguage === 'ar' ?
-                `تم إرسال الرسائل إلى ${selectedCount} مدرسة بنجاح!` :
-                `Lettres envoyées à ${selectedCount} école(s) avec succès!`;
+            // Show template modal and load templates
+            document.getElementById('selectedSchoolsCount').textContent = selectedSchools.size;
+            document.getElementById('templateContainer').style.display = 'flex';
+            document.body.classList.add('modal-open');
+            
+            // Set minimum date for deadline picker
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const minDate = tomorrow.toISOString().split('T')[0];
+            document.getElementById('letterDeadline').min = minDate;
+            
+            selectedTemplateId = null;
+            updateSendButtonState();
+            loadTemplatesForModal();
+        }
 
-            if (confirm(confirmMsg)) {
-                alert(successMsg);
-                clearSelection();
+        // Close template modal
+        function closeTemplateModal() {
+            document.getElementById('templateContainer').style.display = 'none';
+            selectedTemplateId = null;
+            
+            // Reset form
+            document.getElementById('letterDeadline').value = '';
+            document.getElementById('letterUrgency').value = 'normal';
+        }
+
+        // Send selected template
+        function sendSelectedTemplate() {
+            const deadline = document.getElementById('letterDeadline').value;
+            const urgency = document.getElementById('letterUrgency').value || 'normal';
+            
+            if (!selectedTemplateId) {
+                const message = currentLanguage === 'ar' ?
+                    'يرجى اختيار نموذج' :
+                    'Veuillez sélectionner un modèle';
+                alert(message);
+                return;
             }
+            
+            if (!deadline) {
+                const message = currentLanguage === 'ar' ?
+                    'يرجى تحديد تاريخ الموعد النهائي' :
+                    'Veuillez sélectionner une date limite';
+                alert(message);
+                return;
+            }
+
+            const selectedCount = selectedSchools.size;
+            const schoolIds = Array.from(selectedSchools);
+            
+            // Send POST request
+            fetch('http://localhost:8080/api/letters', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    schoolIds: schoolIds,
+                    templateId: selectedTemplateId,
+                    deadline: deadline,
+                    urgency: urgency
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const successMsg = currentLanguage === 'ar' ?
+                    `تم إرسال الرسائل إلى ${selectedCount} مدرسة بنجاح!` :
+                    `Lettres envoyées à ${selectedCount} école(s) avec succès!`;
+                alert(successMsg);
+                closeTemplateModal();
+                clearSelection();
+            })
+            .catch(error => {
+                console.error('Error sending letters:', error);
+                const errorMsg = currentLanguage === 'ar' ?
+                    'خطأ في إرسال الرسائل' :
+                    'Erreur lors de l\'envoi des lettres';
+                alert(errorMsg);
+            });
+        }
+
+        // Clear selection
+        function clearSelection() {
+            const checkboxes = document.querySelectorAll('.school-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+                checkbox.closest('.school-card').classList.remove('selected');
+            });
+            selectedSchools.clear();
+            updateSelection();
+        }
+
+        // Load templates for modal
+        function loadTemplatesForModal() {
+            templatesPromise
+                .then(data => {
+                    templates = data;
+                    renderTemplatesInModal();
+                })
+                .catch(error => {
+                    console.error('Error loading templates:', error);
+                    showTemplateErrorState();
+                });
+        }
+
+        // Render templates in modal
+        function renderTemplatesInModal() {
+            const grid = document.getElementById('templateGrid');
+            
+            if (templates.length === 0) {
+                grid.innerHTML = `
+                    <div class="template-loading">
+                        <div>📝</div>
+                        <p data-fr="Aucun modèle disponible" data-ar="لا توجد نماذج متاحة">Aucun modèle disponible</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let gridHTML = '';
+            templates.forEach(template => {
+                gridHTML += `
+                    <div class="template-card" data-template-id="${template.id}" onclick="selectTemplate('${template.id}')">
+                        <div class="template-card-header">
+                            <span class="template-type">📝</span>
+                            <span class="template-name">${escapeHtml(template.name)}</span>
+                        </div>
+                        <div class="template-description">${escapeHtml(template.description)}</div>
+                        <div class="template-fields">${template.fields.length} champs définis</div>
+                    </div>
+                `;
+            });
+
+            grid.innerHTML = gridHTML;
+            
+            // Update language for newly added elements
+            switchLanguage(currentLanguage);
+        }
+
+        // Select template
+        function selectTemplate(templateId) {
+            // Remove selection from all templates
+            document.querySelectorAll('.template-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Add selection to clicked template
+            document.querySelector(`[data-template-id="${templateId}"]`).classList.add('selected');
+            selectedTemplateId = templateId;
+            
+            // Set minimum date to tomorrow if not already set
+            const deadlineInput = document.getElementById('letterDeadline');
+            if (!deadlineInput.min) {
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                const minDate = tomorrow.toISOString().split('T')[0];
+                deadlineInput.min = minDate;
+            }
+            
+            updateSendButtonState();
+        }
+
+        // Update send button state
+        function updateSendButtonState() {
+            const sendBtn = document.querySelector('.send-template-btn');
+            if (!sendBtn) return;
+            
+            const deadline = document.getElementById('letterDeadline').value;
+            
+            const isFormComplete = selectedTemplateId && deadline;
+            sendBtn.disabled = !isFormComplete;
+        }
+
+        // Show template error state
+        function showTemplateErrorState() {
+            const grid = document.getElementById('templateGrid');
+            grid.innerHTML = `
+                <div class="template-loading">
+                    <div>❌</div>
+                    <p data-fr="Erreur lors du chargement des modèles" data-ar="خطأ في تحميل النماذج">Erreur lors du chargement des modèles</p>
+                </div>
+            `;
+        }
+
+        // Escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         // Initialize language when page loads
@@ -810,6 +1326,11 @@
                 displayAllSchools(schools);
             })
 
+            // Add event listeners for letter options
+            document.getElementById('letterDeadline').addEventListener('change', updateSendButtonState);
+            
+            // Set default urgency to normal (but don't make it required)
+            document.getElementById('letterUrgency').value = 'normal';
         });
 
 

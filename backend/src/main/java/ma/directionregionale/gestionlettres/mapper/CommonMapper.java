@@ -2,7 +2,10 @@ package ma.directionregionale.gestionlettres.mapper;
 
 import ma.directionregionale.gestionlettres.branch.Branch;
 import ma.directionregionale.gestionlettres.dto.*;
+import ma.directionregionale.gestionlettres.letter.Letter;
 import ma.directionregionale.gestionlettres.project.Project;
+import ma.directionregionale.gestionlettres.response.Response;
+import ma.directionregionale.gestionlettres.response.ResponseResponse;
 import ma.directionregionale.gestionlettres.school.School;
 import ma.directionregionale.gestionlettres.template.Template;
 import org.springframework.stereotype.Service;
@@ -74,6 +77,25 @@ public class CommonMapper {
     }
 
 
+
+    public LetterResponse letterToLetterResponse(Letter letter){
+        LetterResponse letterResponse = new LetterResponse();
+        
+        // Initialize the nested objects
+        letterResponse.setLetterDetailsResponse(new LetterDetailsResponse());
+        letterResponse.setSchools(new ArrayList<>());
+        letterResponse.setResponses(new ArrayList<>());
+
+        letterResponse.setTemplate(templateToTemplateResponse(letter.getTemplate()));
+
+        letterDetailsToLetterResponse(letter, letterResponse.getLetterDetailsResponse());
+
+        schoolsToLetterResponse(letter, letterResponse.getSchools());
+
+        responsesToLetterResponse(letter, letterResponse.getResponses());
+        return letterResponse;
+    }
+
     public TemplateResponse templateToTemplateResponse (Template template){
         TemplateResponse templateResponse = new TemplateResponse();
 
@@ -83,4 +105,29 @@ public class CommonMapper {
         templateResponse.setFields(template.getFields());
          return templateResponse;
     }
+
+
+    public void letterDetailsToLetterResponse (Letter letter, LetterDetailsResponse letterDetailsResponse){
+        letterDetailsResponse.setId(letter.getId());
+        letterDetailsResponse.setDeadline(letter.getDeadline());
+        letterDetailsResponse.setUrgency(letter.getUrgency());
+    }
+
+    public void responsesToLetterResponse(Letter letter, List<ResponseResponse> responseResponses){
+        for (Response response : letter.getResponses()){
+            ResponseResponse responseResponse = new ResponseResponse();
+            responseResponse.setId(response.getId());
+
+            responseResponses.add(responseResponse);
+        }
+    }
+
+    public void schoolsToLetterResponse(Letter letter, List<SchoolResponse> schoolResponses){
+        for(School school : letter.getSchools()){
+
+            schoolResponses.add(schoolToSchoolResponse(school));
+        }
+    }
+
 }
+
