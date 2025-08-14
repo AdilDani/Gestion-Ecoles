@@ -12,5 +12,6 @@ public class LetterRequest {
     private String urgency;
     private String deadline;
     private List<String> schoolIds;
+    private String sentAt;
 
 }

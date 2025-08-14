@@ -22,6 +22,7 @@ public class Letter {
 
     private String urgency;
     private String deadline;
+    private String sentAt;
 
 
     @OneToMany(mappedBy = "letter")

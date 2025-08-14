@@ -570,8 +570,193 @@
             item.classList.add('fade-in');
         });
 
+        // Load letters for the current school
+        async function loadLetters() {
+            const currentSchoolId = localStorage.getItem('currentSchoolId');
+            
+            if (!currentSchoolId) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`http://localhost:8080/api/letters/school/${currentSchoolId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch letters');
+                }
+                
+                const letters = await response.json();
+                displayLetters(letters);
+                
+            } catch (error) {
+                console.error('Error loading letters:', error);
+                showEmptyState('Erreur lors du chargement des lettres.');
+            }
+        }
+        
+        // Display letters in the appropriate tabs
+        function displayLetters(letters) {
+            const pendingContainer = document.querySelector('#tab-pending .letters-list');
+            const respondedContainer = document.querySelector('#tab-responded .letters-list');
+            
+            // Clear existing content
+            pendingContainer.innerHTML = '';
+            respondedContainer.innerHTML = '';
+            
+            let pendingCount = 0;
+            let respondedCount = 0;
+            
+            if (letters.length === 0) {
+                showEmptyState('Aucune lettre reçue pour le moment.');
+                updateTabCounts(0, 0);
+                return;
+            }
+            
+            // Sort letters: urgent first, then by date (newest to oldest)
+            const sortedLetters = letters.sort((a, b) => {
+                const urgentA = isLetterUrgent(a);
+                const urgentB = isLetterUrgent(b);
+                
+                // If urgency is different, urgent letters go first
+                if (urgentA !== urgentB) {
+                    return urgentB - urgentA; // true=1, false=0, so urgent (true) comes first
+                }
+                
+                // If same urgency level, sort by date (newest first)
+                const dateA = a.letterDetailsResponse.sentAt || '';
+                const dateB = b.letterDetailsResponse.sentAt || '';
+                return dateB.localeCompare(dateA);
+            });
+            
+            sortedLetters.forEach(letter => {
+                const letterElement = createLetterElement(letter);
+                
+                // Check if letter has responses to determine status
+                const hasResponse = letter.responses && letter.responses.length > 0;
+                
+                if (hasResponse) {
+                    letterElement.classList.add('responded');
+                    respondedContainer.appendChild(letterElement);
+                    respondedCount++;
+                } else {
+                    letterElement.classList.add('pending');
+                    pendingContainer.appendChild(letterElement);
+                    pendingCount++;
+                }
+            });
+            
+            // Show empty state for tabs with no letters
+            if (pendingCount === 0) {
+                pendingContainer.innerHTML = createEmptyStateHTML('Aucun message en attente.');
+            }
+            if (respondedCount === 0) {
+                respondedContainer.innerHTML = createEmptyStateHTML('Aucun message traité.');
+            }
+            
+            updateTabCounts(pendingCount, respondedCount);
+        }
+        
+        // Helper function to check if letter is urgent
+        function isLetterUrgent(letter) {
+            const urgency = letter.letterDetailsResponse.urgency || '';
+            return urgency.toLowerCase() === 'urgent' || urgency.toLowerCase() === 'high';
+        }
+
+        // Helper function to get urgency display info
+        function getUrgencyInfo(letter) {
+            const isUrgent = isLetterUrgent(letter);
+            
+            return {
+                display: isUrgent ? 'Urgent' : 'Normal',
+                cssClass: isUrgent ? 'project' : 'specific' // project=red, specific=green
+            };
+        }
+
+        // Create HTML element for a single letter
+        function createLetterElement(letter) {
+            const letterDiv = document.createElement('div');
+            letterDiv.className = 'letter-item fade-in';
+            letterDiv.onclick = () => respondToLetter(letter.letterDetailsResponse.id);
+            
+            const urgencyInfo = getUrgencyInfo(letter);
+            
+            letterDiv.innerHTML = `
+                <div class="letter-header">
+                    <div class="letter-info">
+                        <span class="letter-type ${urgencyInfo.cssClass}">${urgencyInfo.display}</span>
+                        <div class="letter-title">${letter.template && letter.template.name ? letter.template.name : 'Demande de Rapport'}</div>
+                        <div class="letter-date">Reçu le ${formatDate(letter.letterDetailsResponse.sentAt)}</div>
+                        <div class="letter-description">${letter.template && letter.template.description ? letter.template.description : 'Description non disponible'}</div>
+                    </div>
+                    <div class="letter-status">
+                        <div class="status-badge ${letter.responses && letter.responses.length > 0 ? 'completed' : 'pending'}">
+                            ${letter.responses && letter.responses.length > 0 ? '✅ Traité' : '⏳ En attente'}
+                        </div>
+                        <div class="deadline">
+                            Échéance: ${formatDate(letter.letterDetailsResponse.deadline)}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            return letterDiv;
+        }
+        
+        // Create empty state HTML
+        function createEmptyStateHTML(message) {
+            return `
+                <div class="empty-state">
+                    <div class="empty-icon">📭</div>
+                    <p class="empty-text">${message}</p>
+                </div>
+            `;
+        }
+        
+        // Show empty state
+        function showEmptyState(message) {
+            const pendingContainer = document.querySelector('#tab-pending .letters-list');
+            const respondedContainer = document.querySelector('#tab-responded .letters-list');
+            
+            pendingContainer.innerHTML = createEmptyStateHTML(message);
+            respondedContainer.innerHTML = createEmptyStateHTML('Aucun message traité.');
+        }
+        
+        // Update tab button counts
+        function updateTabCounts(pendingCount, respondedCount) {
+            const pendingButton = document.querySelector('.tab-button[onclick*="pending"]');
+            const respondedButton = document.querySelector('.tab-button[onclick*="responded"]');
+            
+            if (pendingButton) {
+                pendingButton.textContent = `⏳ Messages en Attente (${pendingCount})`;
+                pendingButton.setAttribute('data-fr', `⏳ Messages en Attente (${pendingCount})`);
+                pendingButton.setAttribute('data-ar', `⏳ الرسائل في الانتظار (${pendingCount})`);
+            }
+            
+            if (respondedButton) {
+                respondedButton.textContent = `✅ Messages Traités (${respondedCount})`;
+                respondedButton.setAttribute('data-fr', `✅ Messages Traités (${respondedCount})`);
+                respondedButton.setAttribute('data-ar', `✅ الرسائل المعالجة (${respondedCount})`);
+            }
+        }
+        
+        // Format date helper
+        function formatDate(dateString) {
+            if (!dateString || dateString === 'null' || dateString.trim() === '') {
+                return 'No date found';
+            }
+            // Return the date exactly as received from backend
+            return dateString;
+        }
+
         // Initialize language when page loads
         document.addEventListener('DOMContentLoaded', function() {
+            loadLetters();
             initializeLanguage();
         });
     </script>

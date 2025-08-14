@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - Direction Régionale</title>
+    <style>
+        /* Palette de couleurs du gouvernement marocain */
+        :root {
+            --primary-red: #C41E3A;
+            --primary-green: #006233;
+            --light-green: #228B22;
+            --accent-orange: #FF8C00;
+            --neutral-white: #FFFFFF;
+            --light-gray: #F8F9FA;
+            --medium-gray: #6C757D;
+            --dark-gray: #343A40;
+            --border-gray: #DEE2E6;
+            
+            --shadow-light: 0 2px 4px rgba(0,0,0,0.1);
+            --shadow-medium: 0 4px 8px rgba(0,0,0,0.15);
+            --shadow-heavy: 0 8px 16px rgba(0,0,0,0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--light-gray) 0%, #E8F5E8 100%);
+            color: var(--dark-gray);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-container {
+            background: var(--neutral-white);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow-heavy);
+            max-width: 400px;
+            width: 100%;
+            margin: 1rem;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .gov-logo {
+            width: 60px;
+            height: 60px;
+            background: var(--primary-red);
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--neutral-white);
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+
+        .login-title {
+            color: var(--primary-red);
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-subtitle {
+            color: var(--medium-gray);
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            color: var(--dark-gray);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border-gray);
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-green);
+            box-shadow: 0 0 0 3px rgba(0, 98, 51, 0.1);
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--light-green) 100%);
+            color: var(--neutral-white);
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-light);
+        }
+
+        .login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .login-button:active {
+            transform: translateY(0);
+        }
+
+        .error-message {
+            color: var(--primary-red);
+            font-size: 0.9rem;
+            text-align: center;
+            margin-top: 1rem;
+            padding: 0.5rem;
+            border-radius: 4px;
+            background-color: rgba(196, 30, 58, 0.1);
+            display: none;
+        }
+
+        .loading {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid var(--neutral-white);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 1.5rem;
+                margin: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <div class="gov-logo">🏫</div>
+            <h1 class="login-title">Connexion Directeur</h1>
+            <p class="login-subtitle">Direction Régionale - Gestion des Lettres</p>
+        </div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="schoolId" class="form-label">ID de l'École</label>
+                <input 
+                    type="text" 
+                    id="schoolId" 
+                    name="schoolId" 
+                    class="form-input" 
+                    placeholder="Saisissez l'ID de votre école"
+                    required
+                    autocomplete="off"
+                >
+            </div>
+
+            <button type="submit" class="login-button" id="loginButton">
+                Se Connecter
+            </button>
+
+            <div id="errorMessage" class="error-message"></div>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const schoolId = document.getElementById('schoolId').value.trim();
+            const loginButton = document.getElementById('loginButton');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            if (!schoolId) {
+                showError('Veuillez saisir un ID d\'école valide.');
+                return;
+            }
+            
+            loginButton.classList.add('loading');
+            loginButton.disabled = true;
+            loginButton.textContent = 'Connexion en cours...';
+            errorMessage.style.display = 'none';
+            
+            try {
+                const response = await fetch(`http://localhost:8080/api/schools/${schoolId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        throw new Error('École introuvable. Vérifiez l\'ID saisi.');
+                    } else {
+                        throw new Error('Erreur de connexion. Veuillez réessayer.');
+                    }
+                }
+                
+                const schoolData = await response.json();
+                
+                // Store school data in localStorage for access in acceuil.html
+                localStorage.setItem('schoolData', JSON.stringify(schoolData));
+                localStorage.setItem('currentSchoolId', schoolId);
+                
+                // Redirect to acceuil.html
+                window.location.href = 'acceuil.html';
+                
+            } catch (error) {
+                console.error('Login error:', error);
+                showError(error.message);
+            } finally {
+                loginButton.classList.remove('loading');
+                loginButton.disabled = false;
+                loginButton.textContent = 'Se Connecter';
+            }
+        });
+        
+        function showError(message) {
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+        }
+        
+        // Clear any existing school data on page load
+        window.addEventListener('load', function() {
+            localStorage.removeItem('schoolData');
+            localStorage.removeItem('currentSchoolId');
+        });
+    </script>
+</body>
+</html>

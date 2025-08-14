@@ -111,12 +111,15 @@ public class CommonMapper {
         letterDetailsResponse.setId(letter.getId());
         letterDetailsResponse.setDeadline(letter.getDeadline());
         letterDetailsResponse.setUrgency(letter.getUrgency());
+        letterDetailsResponse.setSentAt(letter.getSentAt());
     }
 
     public void responsesToLetterResponse(Letter letter, List<ResponseResponse> responseResponses){
         for (Response response : letter.getResponses()){
             ResponseResponse responseResponse = new ResponseResponse();
             responseResponse.setId(response.getId());
+            responseResponse.setFieldResponses(response.getFieldResponses());
+            responseResponse.setSentAt(response.getSentAt());
 
             responseResponses.add(responseResponse);
         }

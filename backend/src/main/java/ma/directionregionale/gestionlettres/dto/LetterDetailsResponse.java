@@ -9,4 +9,5 @@ public class LetterDetailsResponse {
     private String urgency;
     private String deadline;
     private String id;
+    private String sentAt;
 }

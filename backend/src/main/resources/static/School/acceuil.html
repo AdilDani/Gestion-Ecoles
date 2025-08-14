@@ -376,9 +376,9 @@
                 concernant l'avancement de vos projets et l'état général de votre établissement.
             </p>
             <div class="user-info">
-                <strong data-fr="Établissement :" data-ar="المؤسسة:">Établissement :</strong> <span data-fr="[Nom de l'École]" data-ar="[اسم المدرسة]">[Nom de l'École]</span><br>
-                <strong data-fr="Directeur :" data-ar="المدير:">Directeur :</strong> <span data-fr="[Nom du Directeur]" data-ar="[اسم المدير]">[Nom du Directeur]</span><br>
-                <strong data-fr="Région :" data-ar="المنطقة:">Région :</strong> <span data-fr="Fès-Meknès" data-ar="فاس - مكناس">Fès-Meknès</span>
+                <strong data-fr="Établissement :" data-ar="المؤسسة:">Établissement :</strong> <span id="schoolName" data-fr="[Nom de l'École]" data-ar="[اسم المدرسة]">[Nom de l'École]</span><br>
+                <strong data-fr="Directeur :" data-ar="المدير:">Directeur :</strong> <span id="directorName" data-fr="[Nom du Directeur]" data-ar="[اسم المدير]">[Nom du Directeur]</span><br>
+                <strong data-fr="Région :" data-ar="المنطقة:">Région :</strong> <span id="schoolRegion" data-fr="Fès-Meknès" data-ar="فاس - مكناس">Fès-Meknès</span>
             </div>
         </div>
 
@@ -467,8 +467,57 @@
             switchLanguage(currentLanguage);
         }
 
+        // Load school information
+        function loadSchoolInfo() {
+            const schoolData = localStorage.getItem('schoolData');
+            const currentSchoolId = localStorage.getItem('currentSchoolId');
+            
+            if (!schoolData || !currentSchoolId) {
+                // Redirect to login if no school data found
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            try {
+                const school = JSON.parse(schoolData);
+                const schoolDetails = school.schoolDetails;
+                
+                if (schoolDetails) {
+                    // Update school name
+                    const schoolNameElement = document.getElementById('schoolName');
+                    if (schoolNameElement && schoolDetails.schoolname) {
+                        schoolNameElement.textContent = schoolDetails.schoolname;
+                        schoolNameElement.setAttribute('data-fr', schoolDetails.schoolname);
+                        schoolNameElement.setAttribute('data-ar', schoolDetails.schoolname);
+                    }
+                    
+                    // Update director name
+                    const directorNameElement = document.getElementById('directorName');
+                    if (directorNameElement && schoolDetails.directorfirstname && schoolDetails.directorlastname) {
+                        const directorFullName = `${schoolDetails.directorfirstname} ${schoolDetails.directorlastname}`;
+                        directorNameElement.textContent = directorFullName;
+                        directorNameElement.setAttribute('data-fr', directorFullName);
+                        directorNameElement.setAttribute('data-ar', directorFullName);
+                    }
+                    
+                    // Update region
+                    const regionElement = document.getElementById('schoolRegion');
+                    if (regionElement && schoolDetails.region) {
+                        regionElement.textContent = schoolDetails.region;
+                        regionElement.setAttribute('data-fr', schoolDetails.region);
+                        regionElement.setAttribute('data-ar', schoolDetails.region);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading school data:', error);
+                // Redirect to login if data is corrupted
+                window.location.href = 'login.html';
+            }
+        }
+
         // Initialize language when page loads
         document.addEventListener('DOMContentLoaded', function() {
+            loadSchoolInfo();
             initializeLanguage();
         });
     </script>

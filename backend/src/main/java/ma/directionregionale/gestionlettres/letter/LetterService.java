@@ -14,6 +14,10 @@ import ma.directionregionale.gestionlettres.template.Template;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -36,6 +40,10 @@ public class LetterService {
 
         letter.setDeadline(letterRequest.getDeadline());
         letter.setUrgency(letterRequest.getUrgency());
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        letter.setSentAt(LocalDateTime.now().format(formatter)); // "2025-08-14 14:30:45"
+
         Optional<Template> templateOptional =
                 templateRepository.findById(letterRequest.getTemplateId());
         if (templateOptional.isEmpty()){
@@ -56,5 +64,33 @@ public class LetterService {
 
         LetterResponse letterResponse = new LetterResponse();
         return commonMapper.letterToLetterResponse(savedLetter);
+    }
+
+
+    public List<LetterResponse> getLettersBySchoolId(String schoolId){
+        List<LetterResponse> letterResponseList = new ArrayList<>();
+
+        Optional<School> schoolOptional = schoolRepository.findById(schoolId);
+        if (schoolOptional.isEmpty()){
+            throw new GlobalException("SCHOOL_ID_NOT_FOUND_IN_LETTER_SERVICE","SCHOOL with ID " + schoolId +" DOES_NOT_EXIST");
+        }
+
+        School school = schoolOptional.get();
+
+        for(Letter schoolLetter: school.getLetters()){
+            letterResponseList.add(commonMapper.letterToLetterResponse(schoolLetter));
+        }
+        return letterResponseList;
+
+    }
+
+    public LetterResponse getLetterById(String id){
+        Optional<Letter> letterOptional = letterRepository.findById(id);
+        if (letterOptional.isEmpty()){
+            throw new GlobalException("LETTER_ID_NOT_FOUND_IN_LETTER_SERVICE","LETTER with ID " + id +" DOES_NOT_EXIST");
+        }
+        Letter letter = letterOptional.get();
+
+        return commonMapper.letterToLetterResponse(letter);
     }
 }
