@@ -682,22 +682,22 @@
         <div class="letter-info-card fade-in">
             <div class="letter-header">
                 <div>
-                    <span class="letter-type project" data-fr="📊 Rapport de Projet" data-ar="📊 تقرير المشروع">📊 Rapport de Projet</span>
-                    <h1 class="letter-title" data-fr="Mise à jour Projets - Juillet 2025" data-ar="تحديث المشاريع - يوليو 2025">Mise à jour Projets - Juillet 2025</h1>
-                    <p class="letter-meta" data-fr="Envoyé le 25 Juillet 2025 à 14:30" data-ar="أرسل في 25 يوليو 2025 في 14:30">Envoyé le 25 Juillet 2025 à 14:30</p>
+                    <span class="letter-type specific" data-fr="Normal" data-ar="عادي">Normal</span>
+                    <h1 class="letter-title" data-fr="Chargement..." data-ar="جاري التحميل...">Chargement...</h1>
+                    <p class="letter-meta" data-fr="Chargement des informations..." data-ar="جاري تحميل المعلومات...">Chargement des informations...</p>
                 </div>
                 
                 <div class="response-summary">
                     <div class="summary-stat">
-                        <div class="summary-number">5</div>
+                        <div class="summary-number">0</div>
                         <div class="summary-label" data-fr="Réponses" data-ar="ردود">Réponses</div>
                     </div>
                     <div class="summary-stat">
-                        <div class="summary-number">3</div>
+                        <div class="summary-number">0</div>
                         <div class="summary-label" data-fr="En attente" data-ar="في الانتظار">En attente</div>
                     </div>
                     <div class="summary-stat">
-                        <div class="summary-number">8</div>
+                        <div class="summary-number">0</div>
                         <div class="summary-label" data-fr="Total écoles" data-ar="إجمالي المدارس">Total écoles</div>
                     </div>
                 </div>
@@ -707,14 +707,14 @@
         <!-- Onglets de gestion -->
         <div class="tabs-container fade-in">
             <div class="tabs-header">
-                <button class="tab-button active" onclick="switchTab('all')" data-fr="Toutes (8)" data-ar="جميع (8)">
-                    Toutes (8)
+                <button class="tab-button active" onclick="switchTab('all')" data-fr="Toutes (0)" data-ar="جميع (0)">
+                    Toutes (0)
                 </button>
-                <button class="tab-button" onclick="switchTab('responded')" data-fr="Ont répondu (5)" data-ar="ردوا (5)">
-                    Ont répondu (5)
+                <button class="tab-button" onclick="switchTab('responded')" data-fr="Ont répondu (0)" data-ar="ردوا (0)">
+                    Ont répondu (0)
                 </button>
-                <button class="tab-button" onclick="switchTab('pending')" data-fr="En attente (3)" data-ar="في الانتظار (3)">
-                    En attente (3)
+                <button class="tab-button" onclick="switchTab('pending')" data-fr="En attente (0)" data-ar="في الانتظار (0)">
+                    En attente (0)
                 </button>
             </div>
 
@@ -736,16 +736,14 @@
                     </div>
 
                     <div class="schools-list" id="schools-all">
-                        <!-- Toutes les écoles sélectionnées apparaîtront ici -->
+                        <!-- Toutes les écoles apparaîtront ici -->
                         <div class="empty-state">
                             <div class="empty-icon">🏫</div>
-                            <div class="empty-title" data-fr="Aucune école sélectionnée" data-ar="لا توجد مدارس محددة">Aucune école sélectionnée</div>
-                            <div class="empty-description" data-fr="Sélectionnez des écoles depuis le tableau de bord pour envoyer une lettre." data-ar="اختر المدارس من لوحة التحكم لإرسال رسالة.">
-                                Sélectionnez des écoles depuis le tableau de bord pour envoyer une lettre.
+                            <div class="empty-title" data-fr="Chargement des écoles..." data-ar="جاري تحميل المدارس...">Chargement des écoles...</div>
+                            <div class="empty-description" data-fr="Les écoles destinataires de cette lettre vont apparaître ici." data-ar="ستظهر هنا المدارس المرسل إليها هذه الرسالة.">
+                                Les écoles destinataires de cette lettre vont apparaître ici.
                             </div>
                         </div>
-                    </div>
-                        <!-- Fin de la section d'exemple d'écoles -->
                     </div>
                 </div>
 
@@ -975,13 +973,303 @@
             }
         });
 
+        // Global variables for letter data
+        let letterData = null;
+        let respondersData = null;
+        let currentLetterId = null;
+
+        // Get letter ID from URL parameters
+        function getLetterIdFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('id');
+        }
+
+        // Fetch letter details
+        function fetchLetterDetails(letterId) {
+            return fetch(`http://localhost:8080/api/letters/${letterId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch letter details');
+                    }
+                    return response.json();
+                });
+        }
+
+        // Fetch responders and non-responders
+        function fetchRespondersData(letterId) {
+            return fetch(`http://localhost:8080/api/responses/${letterId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch responders data');
+                    }
+                    return response.json();
+                });
+        }
+
+        // Display letter header information
+        function displayLetterHeader(letter) {
+            const urgency = letter.letterDetailsResponse?.urgency || 'normal';
+            const deadline = letter.letterDetailsResponse?.deadline || '';
+            const sentAt = letter.letterDetailsResponse?.sentAt || '';
+            const isUrgent = urgency.toLowerCase() === 'urgent';
+            
+            // Update letter type badge
+            const letterTypeElement = document.querySelector('.letter-type');
+            letterTypeElement.className = `letter-type ${isUrgent ? 'project' : 'specific'}`;
+            letterTypeElement.setAttribute('data-fr', isUrgent ? 'Urgent' : 'Normal');
+            letterTypeElement.setAttribute('data-ar', isUrgent ? 'عاجل' : 'عادي');
+            letterTypeElement.textContent = isUrgent ? 'Urgent' : 'Normal';
+            
+            // Update letter title - use template name if available
+            const titleElement = document.querySelector('.letter-title');
+            const templateName = letter.template?.name || 'Lettre sans titre';
+            titleElement.setAttribute('data-fr', templateName);
+            titleElement.setAttribute('data-ar', templateName);
+            titleElement.textContent = templateName;
+            
+            // Update letter meta (sent date and deadline)
+            const metaElement = document.querySelector('.letter-meta');
+            const sentDate = formatDate(sentAt);
+            const metaText = deadline ? 
+                `Envoyé le ${sentDate} - Échéance: ${formatDate(deadline)}` : 
+                `Envoyé le ${sentDate}`;
+            metaElement.setAttribute('data-fr', metaText);
+            metaElement.setAttribute('data-ar', metaText);
+            metaElement.textContent = metaText;
+        }
+
+        // Update summary statistics
+        function updateSummaryStats(responders, nonResponders, responses) {
+            const respondersCount = responders ? responders.length : 0;
+            const nonRespondersCount = nonResponders ? nonResponders.length : 0;
+            const totalSchools = respondersCount + nonRespondersCount;
+            
+            // Update numbers
+            document.querySelectorAll('.summary-number')[0].textContent = respondersCount;
+            document.querySelectorAll('.summary-number')[1].textContent = nonRespondersCount;
+            document.querySelectorAll('.summary-number')[2].textContent = totalSchools;
+        }
+
+        // Update tab button counts
+        function updateTabCounts(responders, nonResponders) {
+            const respondersCount = responders ? responders.length : 0;
+            const nonRespondersCount = nonResponders ? nonResponders.length : 0;
+            const totalCount = respondersCount + nonRespondersCount;
+            
+            // Update tab buttons
+            const allTab = document.querySelector('[onclick="switchTab(\'all\')"]');
+            allTab.setAttribute('data-fr', `Toutes (${totalCount})`);
+            allTab.setAttribute('data-ar', `جميع (${totalCount})`);
+            allTab.textContent = `Toutes (${totalCount})`;
+            
+            const respondedTab = document.querySelector('[onclick="switchTab(\'responded\')"]');
+            respondedTab.setAttribute('data-fr', `Ont répondu (${respondersCount})`);
+            respondedTab.setAttribute('data-ar', `ردوا (${respondersCount})`);
+            respondedTab.textContent = `Ont répondu (${respondersCount})`;
+            
+            const pendingTab = document.querySelector('[onclick="switchTab(\'pending\')"]');
+            pendingTab.setAttribute('data-fr', `En attente (${nonRespondersCount})`);
+            pendingTab.setAttribute('data-ar', `في الانتظار (${nonRespondersCount})`);
+            pendingTab.textContent = `En attente (${nonRespondersCount})`;
+        }
+
+        // Create school item HTML
+        function createSchoolItem(school, hasResponded, responseData = null) {
+            const schoolDetails = school.schoolDetails || {};
+            const schoolName = schoolDetails.schoolname || 'École sans nom';
+            const directorName = `${schoolDetails.directorfirstname || ''} ${schoolDetails.directorlastname || ''}`.trim() || 'Directeur non défini';
+            const phoneNumber = schoolDetails.phonenumber || 'Téléphone non défini';
+            const region = schoolDetails.region || 'Région non définie';
+            const studentsCount = schoolDetails.numberofstudents || 'Non défini';
+            const classroomsCount = schoolDetails.numberofclassrooms || 'Non défini';
+            const educationLevel = schoolDetails.educationlevel || 'Non défini';
+            
+            const statusClass = hasResponded ? 'responded' : 'pending';
+            const statusText = hasResponded ? 'Répondu' : 'En attente';
+            const statusTextAr = hasResponded ? 'رد' : 'في الانتظار';
+            
+            let responseContent = '';
+            if (hasResponded && responseData) {
+                const responseText = responseData.fieldResponses ? 
+                    responseData.fieldResponses.join(' • ') : 'Pas de contenu de réponse';
+                const responseDate = formatDate(responseData.sentAt);
+                
+                responseContent = `
+                    <div class="response-content">
+                        <div class="response-text">${responseText}</div>
+                        <div class="response-date">Répondu le ${responseDate}</div>
+                    </div>
+                `;
+            }
+            
+            return `
+                <div class="school-item ${statusClass}" data-school-id="${schoolDetails.id}">
+                    <input type="checkbox" class="school-checkbox" onchange="updateSelectionForTab()">
+                    <div class="school-header">
+                        <div class="school-info">
+                            <div class="school-name">${schoolName}</div>
+                            <div class="school-director">Directeur: ${directorName}</div>
+                            <div class="school-contact">
+                                Tél: ${phoneNumber} | Région: ${region}<br>
+                                ${studentsCount} élèves | ${classroomsCount} salles | Niveau: ${educationLevel}
+                            </div>
+                        </div>
+                        <div class="response-info">
+                            <div class="response-status ${statusClass}" data-fr="${statusText}" data-ar="${statusTextAr}">
+                                ${statusText}
+                            </div>
+                        </div>
+                    </div>
+                    ${responseContent}
+                </div>
+            `;
+        }
+
+        // Populate schools in tabs
+        function populateSchoolTabs(responders, nonResponders, responses) {
+            // Create response lookup map
+            const responseMap = new Map();
+            if (responses) {
+                responses.forEach(response => {
+                    responseMap.set(response.schoolId, response);
+                });
+            }
+            
+            // Populate All tab
+            const allContainer = document.getElementById('schools-all');
+            allContainer.innerHTML = '';
+            
+            // Add responders to all tab
+            if (responders && responders.length > 0) {
+                responders.forEach(school => {
+                    const responseData = responseMap.get(school.schoolDetails?.id);
+                    allContainer.innerHTML += createSchoolItem(school, true, responseData);
+                });
+            }
+            
+            // Add non-responders to all tab
+            if (nonResponders && nonResponders.length > 0) {
+                nonResponders.forEach(school => {
+                    allContainer.innerHTML += createSchoolItem(school, false);
+                });
+            }
+            
+            // Populate Responded tab
+            const respondedContainer = document.getElementById('schools-responded');
+            respondedContainer.innerHTML = '';
+            
+            if (responders && responders.length > 0) {
+                responders.forEach(school => {
+                    const responseData = responseMap.get(school.schoolDetails?.id);
+                    respondedContainer.innerHTML += createSchoolItem(school, true, responseData);
+                });
+            } else {
+                respondedContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">✅</div>
+                        <div class="empty-title" data-fr="Aucune réponse reçue" data-ar="لم يتم تلقي أي رد">Aucune réponse reçue</div>
+                        <div class="empty-description" data-fr="Les écoles qui ont répondu à la demande apparaîtront ici." data-ar="ستظهر هنا المدارس التي ردت على الطلب.">
+                            Les écoles qui ont répondu à la demande apparaîtront ici.
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Populate Pending tab
+            const pendingContainer = document.getElementById('schools-pending');
+            pendingContainer.innerHTML = '';
+            
+            if (nonResponders && nonResponders.length > 0) {
+                nonResponders.forEach(school => {
+                    pendingContainer.innerHTML += createSchoolItem(school, false);
+                });
+            } else {
+                pendingContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">⏳</div>
+                        <div class="empty-title" data-fr="Aucune école en attente" data-ar="لا توجد مدارس في الانتظار">Aucune école en attente</div>
+                        <div class="empty-description" data-fr="Les écoles qui n'ont pas encore répondu apparaîtront ici." data-ar="ستظهر هنا المدارس التي لم ترد بعد.">
+                            Les écoles qui n'ont pas encore répondu apparaîtront ici.
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Format date function
+        function formatDate(dateString) {
+            if (!dateString) return 'Date non définie';
+            
+            try {
+                const date = new Date(dateString);
+                const options = { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                };
+                return date.toLocaleDateString('fr-FR', options);
+            } catch (error) {
+                return dateString;
+            }
+        }
+
+        // Show error message
+        function showError(message) {
+            alert(`Erreur: ${message}`);
+        }
+
+        // Helper function for checkbox onchange
+        function updateSelectionForTab() {
+            updateSelection(currentTab);
+        }
+
+        // Main initialization function
+        function initializeLetterDetail() {
+            currentLetterId = getLetterIdFromURL();
+            
+            if (!currentLetterId) {
+                showError('ID de lettre manquant dans l\'URL');
+                return;
+            }
+            
+            // Fetch letter details first, then responders data
+            fetchLetterDetails(currentLetterId)
+            .then(letter => {
+                letterData = letter;
+                
+                // Display letter header first
+                displayLetterHeader(letter);
+                
+                // Then fetch responders data
+                return fetchRespondersData(currentLetterId);
+            })
+            .then(responders => {
+                respondersData = responders;
+                
+                // Display responders data
+                updateSummaryStats(responders.responders, responders.nonResponders, responders.responses);
+                updateTabCounts(responders.responders, responders.nonResponders);
+                populateSchoolTabs(responders.responders, responders.nonResponders, responders.responses);
+                
+                // Apply current language
+                switchLanguage(currentLanguage);
+                
+                // Initialize selections
+                updateSelection('all');
+            })
+            .catch(error => {
+                console.error('Error loading letter details:', error);
+                showError('Erreur lors du chargement des détails de la lettre: ' + error.message);
+            });
+        }
+
         // Initialize language when page loads
         document.addEventListener('DOMContentLoaded', function() {
             initializeLanguage();
+            initializeLetterDetail();
         });
-        
-        // Initialiser les sélections
-        updateSelection('all');
     </script>
 </body>
 </html>

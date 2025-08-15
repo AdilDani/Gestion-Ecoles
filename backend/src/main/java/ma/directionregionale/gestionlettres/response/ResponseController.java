@@ -7,8 +7,6 @@ import ma.directionregionale.gestionlettres.dto.ResponseResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/responses")
 public class ResponseController {
@@ -21,8 +19,8 @@ public class ResponseController {
         return responseService.createNewResponse(responseRequest);
     }
 
-    @GetMapping("/{letterId}")
-    public RespondersNonRespondersList getARespondersNonResponders(@PathVariable String id){
+    @GetMapping("/{id}")//the id mentioned is a letterId
+    public RespondersNonRespondersList getRespondersNonRespondersListById(@PathVariable String id){
         return responseService.getRespondersNonRespondersListById(id);
     }
 

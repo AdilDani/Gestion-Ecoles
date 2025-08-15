@@ -545,11 +545,13 @@
             </div>
 
             <!-- Les lettres envoyées seront affichées ici -->
-            <div class="empty-state">
-                <div class="empty-icon">📧</div>
-                <div class="empty-title" data-fr="Aucune lettre envoyée" data-ar="لا توجد رسائل مرسلة">Aucune lettre envoyée</div>
-                <div class="empty-description" data-fr="Les lettres envoyées aux établissements scolaires apparaîtront ici." data-ar="ستظهر الرسائل المرسلة إلى المؤسسات التعليمية هنا.">
-                    Les lettres envoyées aux établissements scolaires apparaîtront ici.
+            <div id="lettersContainer">
+                <div class="empty-state" id="emptyState">
+                    <div class="empty-icon">📧</div>
+                    <div class="empty-title" data-fr="Aucune lettre envoyée" data-ar="لا توجد رسائل مرسلة">Aucune lettre envoyée</div>
+                    <div class="empty-description" data-fr="Les lettres envoyées aux établissements scolaires apparaîtront ici." data-ar="ستظهر الرسائل المرسلة إلى المؤسسات التعليمية هنا.">
+                        Les lettres envoyées aux établissements scolaires apparaîtront ici.
+                    </div>
                 </div>
             </div>
         </div>
@@ -651,6 +653,137 @@
         
         // Initialiser le compteur à 0
         document.getElementById('letterCount').textContent = '0';
+        
+        // Fetch and display all letters
+        function fetchAllLetters() {
+            fetch('http://localhost:8080/api/letters')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch letters');
+                    }
+                    return response.json();
+                })
+                .then(letters => {
+                    displayLetters(letters);
+                })
+                .catch(error => {
+                    console.error('Error fetching letters:', error);
+                    showError('Erreur lors du chargement des lettres');
+                });
+        }
+        
+        function displayLetters(letters) {
+            const container = document.getElementById('lettersContainer');
+            const emptyState = document.getElementById('emptyState');
+            
+            if (!letters || letters.length === 0) {
+                emptyState.style.display = 'block';
+                document.getElementById('letterCount').textContent = '0';
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            container.innerHTML = '';
+            
+            letters.forEach((letter, index) => {
+                const letterElement = createLetterElement(letter, index);
+                container.appendChild(letterElement);
+            });
+            
+            document.getElementById('letterCount').textContent = letters.length;
+            applyFilter(currentFilter);
+        }
+        
+        function createLetterElement(letter, index) {
+            const totalSchools = letter.schools ? letter.schools.length : 0;
+            const totalResponses = letter.responses ? letter.responses.length : 0;
+            const nonResponders = totalSchools - totalResponses;
+            const responseRate = totalSchools > 0 ? Math.round((totalResponses / totalSchools) * 100) : 0;
+            
+            const isComplete = responseRate === 100;
+            const urgency = letter.letterDetailsResponse?.urgency || 'normal';
+            const deadline = letter.letterDetailsResponse?.deadline || '';
+            const sentAt = letter.letterDetailsResponse?.sentAt || '';
+            const letterId = letter.letterDetailsResponse?.id || '';
+            
+            // Determine urgency display and CSS class
+            const isUrgent = urgency.toLowerCase() === 'urgent';
+            const urgencyClass = isUrgent ? 'project' : 'specific';
+            const urgencyText = isUrgent ? 'Urgent' : 'Normal';
+            
+            const letterDiv = document.createElement('div');
+            letterDiv.className = 'letter-item fade-in';
+            letterDiv.style.animationDelay = `${index * 0.1}s`;
+            letterDiv.onclick = () => viewLetterDetail(letterId);
+            
+            letterDiv.innerHTML = `
+                <div class="letter-header">
+                    <div class="letter-info">
+                        <div class="letter-type ${urgencyClass}" data-fr="${isUrgent ? 'Urgent' : 'Normal'}" data-ar="${isUrgent ? 'عاجل' : 'عادي'}">
+                            ${urgencyText}
+                        </div>
+                        <div class="letter-date">${formatDate(sentAt)}</div>
+                        <div class="letter-details">
+                            ${deadline ? `Échéance: ${formatDate(deadline)}` : 'Pas d\'échéance définie'}
+                        </div>
+                    </div>
+                    
+                    <div class="response-stats">
+                        <div class="response-count">
+                            <div class="response-number">${totalResponses}</div>
+                            <div class="response-fraction">sur ${totalSchools}</div>
+                        </div>
+                        
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${responseRate}%"></div>
+                        </div>
+                        
+                        <div class="status-badge ${isComplete ? 'complete' : 'pending'}">
+                            ${isComplete ? '✅ Terminé' : `⏳ ${nonResponders} en attente`}
+                        </div>
+                        
+                        <div class="chevron">›</div>
+                    </div>
+                </div>
+            `;
+            
+            return letterDiv;
+        }
+        
+        function formatDate(dateString) {
+            if (!dateString) return 'Date non définie';
+            
+            try {
+                const date = new Date(dateString);
+                const options = { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                };
+                return date.toLocaleDateString('fr-FR', options);
+            } catch (error) {
+                return dateString;
+            }
+        }
+        
+        function showError(message) {
+            const container = document.getElementById('lettersContainer');
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">❌</div>
+                    <div class="empty-title">${message}</div>
+                    <div class="empty-description">Veuillez réessayer plus tard.</div>
+                </div>
+            `;
+        }
+        
+        // Load letters when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeLanguage();
+            fetchAllLetters();
+        });
     </script>
 </body>
 </html>

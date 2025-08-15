@@ -273,8 +273,33 @@
 
         /* Loading State */
         .loading {
+            opacity: 0.8;
+            cursor: not-allowed;
+            position: relative;
+        }
+
+        /* Spinner Animation */
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid #ffffff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Disabled button state */
+        .btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
+            pointer-events: none;
         }
 
         /* Error/Success Messages */
@@ -343,7 +368,7 @@
     <!-- Header -->
     <header class="header">
         <div class="header-content">
-            <div class="gov-logo">🏫</div>
+            <div class="gov-logo">DR</div>
             <h1 class="header-title">Direction Régionale - Réponse à la Demande</h1>
         </div>
     </header>
@@ -380,7 +405,7 @@
         <!-- Response Form -->
         <div class="response-form fade-in" id="responseFormSection" style="display: none;">
             <h3 class="form-title">
-                ✏️ Formulaire de Réponse
+                Formulaire de Réponse
             </h3>
             
             <!-- Dynamic form fields will be inserted here -->
@@ -388,7 +413,7 @@
             
             <div class="form-actions">
                 <button type="button" class="btn btn-primary" id="sendResponseBtn">
-                    📤 Envoyer la Réponse
+                    Envoyer la Réponse
                 </button>
             </div>
         </div>
@@ -537,67 +562,94 @@
 
         // Handle send response button click
         async function handleSendResponse() {
+            const sendButton = document.getElementById('sendResponseBtn');
+            
+            // Prevent multiple clicks by checking if already processing
+            if (sendButton.disabled || sendButton.classList.contains('loading')) {
+                return;
+            }
+            
             try {
-                const sendButton = document.getElementById('sendResponseBtn');
-                
-                // Disable button and show loading state
-                sendButton.disabled = true;
-                sendButton.classList.add('loading');
-                sendButton.innerHTML = '⏳ Envoi en cours...';
+                // Set loading state immediately to prevent spam clicks
+                setButtonLoadingState(sendButton, true);
                 
                 // Collect form data
-                const formData = collectFormData();
+                const fieldResponses = collectFormData();
                 
-                if (!formData || Object.keys(formData).length === 0) {
+                // Check if at least one field has content
+                const hasContent = fieldResponses.some(response => response.trim() !== '');
+                if (!hasContent) {
                     throw new Error('Aucune donnée à envoyer. Veuillez remplir au moins un champ.');
                 }
                 
-                // Create response object
+                // Create response object matching ResponseRequest structure
                 const responseData = {
+                    schoolId: getCurrentSchoolId(),
                     letterId: letterId,
-                    schoolId: getCurrentSchoolId(), 
-                    fieldResponses: formData,
-                    sentAt: new Date().toISOString().replace('T', ' ').substring(0, 19) // Format: yyyy-MM-dd HH:mm:ss
+                    fieldResponses: fieldResponses
                 };
                 
                 console.log('Sending response data:', responseData);
                 
-                // TODO: Send to API when response endpoint is available
-                // For now, just show success message
-                showMessage('success', 'Réponse envoyée avec succès! (Simulation - API à implémenter)');
+                // Send to API
+                const apiResponse = await fetch('http://localhost:8080/api/responses', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(responseData)
+                });
                 
-                // TODO: Redirect back to received letters after success
-                // setTimeout(() => {
-                //     window.location.href = 'received_letters.html';
-                // }, 2000);
+                if (!apiResponse.ok) {
+                    const errorText = await apiResponse.text();
+                    throw new Error(`Erreur ${apiResponse.status}: ${errorText}`);
+                }
+                
+                const result = await apiResponse.json();
+                console.log('Response sent successfully:', result);
+                
+                showMessage('success', 'Réponse envoyée avec succès!');
+                
+                // Redirect back to received letters after success
+                setTimeout(() => {
+                    window.location.href = 'received_letters.html';
+                }, 2000);
                 
             } catch (error) {
                 console.error('Error sending response:', error);
                 showMessage('error', `Erreur lors de l'envoi: ${error.message}`);
-            } finally {
-                // Re-enable button
-                const sendButton = document.getElementById('sendResponseBtn');
-                sendButton.disabled = false;
-                sendButton.classList.remove('loading');
-                sendButton.innerHTML = '📤 Envoyer la Réponse';
+                
+                // Only re-enable button if there was an error
+                setButtonLoadingState(sendButton, false);
             }
         }
 
-        // Collect data from all dynamic form fields
+        // Set button loading state with spinner
+        function setButtonLoadingState(button, isLoading) {
+            if (isLoading) {
+                button.disabled = true;
+                button.classList.add('loading');
+                button.innerHTML = '<span class="spinner"></span>Envoi en cours...';
+            } else {
+                button.disabled = false;
+                button.classList.remove('loading');
+                button.innerHTML = 'Envoyer la Réponse';
+            }
+        }
+
+        // Collect data from all dynamic form fields and return as array
         function collectFormData() {
-            const formData = {};
+            const fieldResponses = [];
             const fieldsContainer = document.getElementById('dynamicFields');
             const textareas = fieldsContainer.querySelectorAll('.field-textarea');
             
             textareas.forEach((textarea, index) => {
                 const value = textarea.value.trim();
-                if (value) {
-                    const fieldName = currentLetter.template.fields[index];
-                    formData[fieldName] = value;
-                }
+                // Add response for each field, even if empty (to maintain field order)
+                fieldResponses.push(value || '');
             });
             
-            return formData;
+            return fieldResponses;
         }
 
         // Get current school ID (from localStorage)
