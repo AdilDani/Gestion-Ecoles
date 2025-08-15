@@ -1,4 +1,4 @@
-package ma.directionregionale.gestionlettres.response;
+package ma.directionregionale.gestionlettres.dto;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -9,7 +9,7 @@ import java.util.List;
 @Setter
 public class ResponseRequest {
 
+    private String schoolId;
+    private String letterId;
     private List<String> fieldResponses;
-    private String sentAt;
-
 }

@@ -5,7 +5,7 @@ import ma.directionregionale.gestionlettres.dto.*;
 import ma.directionregionale.gestionlettres.letter.Letter;
 import ma.directionregionale.gestionlettres.project.Project;
 import ma.directionregionale.gestionlettres.response.Response;
-import ma.directionregionale.gestionlettres.response.ResponseResponse;
+import ma.directionregionale.gestionlettres.dto.ResponseResponse;
 import ma.directionregionale.gestionlettres.school.School;
 import ma.directionregionale.gestionlettres.template.Template;
 import org.springframework.stereotype.Service;
@@ -120,6 +120,8 @@ public class CommonMapper {
             responseResponse.setId(response.getId());
             responseResponse.setFieldResponses(response.getFieldResponses());
             responseResponse.setSentAt(response.getSentAt());
+            responseResponse.setLetterId(response.getLetter().getId());
+            responseResponse.setSchoolId(response.getSchool().getId());
 
             responseResponses.add(responseResponse);
         }

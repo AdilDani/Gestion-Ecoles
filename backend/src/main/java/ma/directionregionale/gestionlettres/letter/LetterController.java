@@ -5,6 +5,7 @@ import ma.directionregionale.gestionlettres.dto.LetterResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -27,4 +28,11 @@ public class LetterController {
     public LetterResponse getLetterById(@PathVariable String id){
         return letterService.getLetterById(id);
     }
+
+    @GetMapping("")
+    public List<LetterResponse> allLetters(){
+        return letterService.allLetters();
+    }
+
+
 }

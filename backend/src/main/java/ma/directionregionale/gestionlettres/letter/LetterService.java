@@ -4,8 +4,11 @@ import jakarta.transaction.Transactional;
 import ma.directionregionale.gestionlettres.config.GlobalException;
 import ma.directionregionale.gestionlettres.dto.LetterRequest;
 import ma.directionregionale.gestionlettres.dto.LetterResponse;
-import ma.directionregionale.gestionlettres.dto.SchoolResponse;
 import ma.directionregionale.gestionlettres.mapper.CommonMapper;
+import ma.directionregionale.gestionlettres.response.Response;
+import ma.directionregionale.gestionlettres.response.ResponseRepository;
+import ma.directionregionale.gestionlettres.dto.ResponseRequest;
+import ma.directionregionale.gestionlettres.dto.ResponseResponse;
 import ma.directionregionale.gestionlettres.school.School;
 import ma.directionregionale.gestionlettres.school.SchoolRepository;
 import ma.directionregionale.gestionlettres.template.TemplateRepository;
@@ -34,6 +37,9 @@ public class LetterService {
 
     @Autowired
     private SchoolRepository schoolRepository;
+
+    @Autowired
+    private ResponseRepository responseRepository;
 
     public LetterResponse addNewLetter(LetterRequest letterRequest) {
         Letter letter = new Letter();
@@ -92,5 +98,14 @@ public class LetterService {
         Letter letter = letterOptional.get();
 
         return commonMapper.letterToLetterResponse(letter);
+    }
+
+
+    public List<LetterResponse> allLetters() {
+        List<LetterResponse> allLetterResponse=new ArrayList<>();
+        for (Letter currentLetter:letterRepository.findAll()){
+            allLetterResponse.add(commonMapper.letterToLetterResponse(currentLetter));
+        }
+        return allLetterResponse;
     }
 }
